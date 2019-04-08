@@ -216,7 +216,7 @@ request response pageContext session application out config page exception
 -Xmx 最大堆大小
 ## 内存结构
 * JVM内存模型
-![](https://images2015.cnblogs.com/blog/820406/201603/820406-20160326200119386-756216654.png)
+![WX20190408-221810@2x](https://i.imgur.com/JWITtXb.png)
 * JDK8 Hotshot实现的
 ![WX20190312-114256@2x](https://i.imgur.com/QQCJpyg.png)
 
@@ -955,7 +955,8 @@ public class InterceptorConfig extends WebMvcConfigurerAdapter {
 * resultMap 映射 实体类和 表 resultType  parameterType
 * select LAST_INSERT_ID() 
 * 缓存
-![](https://img-blog.csdn.net/20150726164148424?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+
+![20150726164148424](https://i.imgur.com/93nVfYO.png)
 * MyBatis编程步骤
     1. 创建SqlSessionFactory
     2. 通过SqlSessionFactory获取SqlSession
@@ -1471,8 +1472,8 @@ MotanSwitcherUtil.setSwitcherValue(MotanConstants.REGISTRY_HEARTBEAT_SWITCHER, f
 ## 排序算法
 
 * 冒泡排序
+![849589-20171015223238449-2146169197](https://i.imgur.com/uRIt2KO.gif)
 
-![enter image description here](https://images2017.cnblogs.com/blog/849589/201710/849589-20171015223238449-2146169197.gif)
 
 时间复杂度T(n) = O(n2)
 
@@ -1494,8 +1495,8 @@ public static int[] selectionSort(int[] array) {
     }
 ```
 * 选择排序
+![849589-20171015224719590-1433219824](https://i.imgur.com/V5P9AQD.gif)
 
-![enter image description here](https://images2017.cnblogs.com/blog/849589/201710/849589-20171015224719590-1433219824.gif)
 
 时间复杂度T(n) = O(n2) 
 
@@ -1848,8 +1849,8 @@ Redis的所有命令操作都是单线程的，本身提供像 incr 和 increby 
 * 缺点：如果系统中没有Redis，还需要引入新的组件，增加系统复杂度；需要编码和配置的工作量比较大。
 
 ### Twitter的snowflake算法
+![v2-ebae02708fffe6e24fbb3780e0ffab96_hd](https://i.imgur.com/VJxvP5l.jpg)
 
-![](https://pic2.zhimg.com/80/v2-ebae02708fffe6e24fbb3780e0ffab96_hd.jpg)
 * 41位的时间序列，精确到毫秒，可以使用69年
 * 10位的机器标识，最多支持部署1024个节点
 * 12位的序列号，支持每个节点每毫秒产生4096个ID序号，最高位是符号位始终为0。
@@ -2515,7 +2516,7 @@ revert是删除指定的commit操作的内容（指定的版本内容消失，�
 * `Release` 发布到 test，提测、BUG 修复。
 * `HotFix`  线上 BUG 修复。
 
-![](https://img-blog.csdn.net/20180803135443287?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3hpbmdiYW96aGVuMTIxMA==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![20180803135443287](https://i.imgur.com/9wB4wWz.png)
 
 !> 流程
 
