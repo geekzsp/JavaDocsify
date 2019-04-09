@@ -68,6 +68,43 @@ C++可以直接使用指针操作内存。响应的也比较晦涩难懂。 Java
 
     1. 如果两个对象相同， equals方法一定返回true，并且这两个对象的HashCode一定相同；    
     1. 两个对象的HashCode相同，并不一定表示两个对象就相同，即equals()不一定为true，只能够说明这两个对象在一个散列存储结构中。
+## Integer
+Integer中把-128到127
+```java
+Integer a = 1000,b=1000;   
+Integer c = 100,d=100; 
+System.out.println(a==b);  //false
+System.out.println(c==d); true
+```
+//本质 调用valueOf
+```java
+public static Integer valueOf(int i) {  
+    return  i >= 128 || i < -128 ? new Integer(i) : 
+    SMALL_VALUES[i + 128];  
+}  
+
+private static final Integer[] SMALL_VALUES = new Integer[256];  
+
+static {  
+    for (int i = -128; i < 128; i++) {  
+        SMALL_VALUES[i + 128] = new Integer(i);  
+    }  
+}
+```
+```java
+Integer a = new Integer(1000);  
+int b = 1000;  
+Integer c = new Integer(10);  
+Integer d = new Integer(10);  
+System.out.println(a == b);   //true  因为自动拆箱 比较的是值
+System.out.println(c == d);   //false  ==对象比较的是地址
+
+```
+
+```java
+Integer a=NUll;
+int b=a  //自动拆箱 NPE       a.vauleof()
+```
 
 ## String StringBuilder StringBuffer
 * String StringBuilder  StringBuffer
@@ -79,6 +116,30 @@ C++可以直接使用指针操作内存。响应的也比较晦涩难懂。 Java
     每次对String类型的对象进行更改都会生成新的对象。 其他两个都是对自身进行操作。不会生成新的对象
      **综合**    
     少量数据用String  单线程大量用StringBuilder 多线程大量用StringBuffer
+
+* String 对象的两种创建方式
+
+```java
+String str1 = "abcd";
+String str2 = new String("abcd");
+System.out.println(str1==str2);//false
+```
+这两种不同的创建方法是有差别的，第一种方式是在常量池中拿对象，第二种方式是直接在堆内存空间创建一个新的对象。
+
+注：只要使用new方法，便需要创建新的对象。
+
+* String s1 = new String("abc");这句话创建了几个对象？
+
+```java
+        String s1 = new String("abc");// 堆内存的地址值
+        String s2 = "abc";
+        System.out.println(s1 == s2);// 输出false,因为一个是堆内存，一个是常量池的内存，故两者是不同的。
+        System.out.println(s1.equals(s2));// 输出true
+```
+
+先有字符串"abc"放入常量池，然后 new 了一份字符串"abc"放入Java堆(字符串常量"abc"在编译期就已经确定放入常量池，而 Java 堆上的"abc"是在运行期初始化阶段才确定)，然后 Java 栈的 str1 指向Java堆上的"abc"。
+
+String 提供的 intern 方法。`String.intern()` 是一个 Native 方法，它的作用是：如果运行时常量池中已经包含一个等于此 String 对象内容的字符串，则返回常量池中该字符串的引用；如果没有，则在常量池中创建与此 String 内容相同的字符串，并返回常量池中创建的字符串的引用。
 
 ## 接口 抽象类
 * 接口和抽象类有什么区别
@@ -210,33 +271,95 @@ request response pageContext session application out config page exception
 * Cookie 在客户端 Session在服务器端  因为Http协议是无状态的 会话跟踪 维持会话  现在Token用的比较多
 
 # JVM
-* JVM参数设置
 
--Xms 初始化堆大小
--Xmx 最大堆大小
 ## 内存结构
 * JVM内存模型
 ![WX20190408-221810@2x](https://i.imgur.com/JWITtXb.png)
 * JDK8 Hotshot实现的
 ![WX20190312-114256@2x](https://i.imgur.com/QQCJpyg.png)
 
-方法区的实现 jdk8之前 是持久代 放到堆中  但是容易引发OOM 后来引入元数据
-
+> 方法区的实现 jdk8之前 是持久代 放到堆中  但是容易引发OOM 后来引入元数据
 虚拟机栈
 堆 heap     新生代（Eden so s1） 老年代  字符串常量   Eden放不下 YGC   old放不下  YGC          Survivor
 元数据  常量池 类元数据  方法元数据 字段 静态属性 方法 常量   方法区  -perm -元数据
-本地方法栈 native
-程序计数器
+本地方法栈 native 程序计数器
+
+1. Heap(堆区)
+
+Heap区OOM故障的主要发源地，存储着几乎所有的实例对象。堆由垃圾回收器自动回收，堆区由各个子线程共享使用。 -Xms256M -Xmxl024M，其中 -X 表示它是 JVM 运行参数， ms 是 memory start 的简 称， mx 是 memory max 的简称，**JVM 的 Xms 和 Xmx 设置成一样大小，避免在 GC 后调整堆大小时带来的额外压力 。**
+堆区分为新生代和老年代。新生代包括一个Eden和两个Survivor（幸存者）
+
+
+2. Metaspace(元空间) JDK8
+
+对应JVM规范的方法区概念。 元空间的前身是持久代Perm区。 大小固定难以调优，当发生FGC的时候需要移动类元信息。 如果动态加载的类过多容易产生 
+
+```java
+“Exception in thread 'dubbo client x.x connector' java.lang.OutOtemoryE口or: PennGen space
+```
+元空间是在本地内存分配的，Perm区中的所有内容中字符串常量移至堆内存，其他内容包括类元信息、字段、静态属性、方法、常量等 都移动至元空间内，
+
+3. JVM Stack(虚拟机栈)
+栈是一个先进后出的数据结构， `StackOverflowError 表示请求的栈溢出，导致内存耗尽，通常出现在递归方法中`。
+## 垃圾回收
+
+绝大多数对象在Eden区生成，当Eden区满的时候触发YGC(Young Garbage)。回收时Enden区没有被引用的对象直接回收，依然存活的放到Surivor。 Surivor有S1和S2两个区 交替使用。GC的时候把存活的对象放到未使用一个区。然后清除另一个区。一个对象在S1和S2来回交换次数有上限默认15，`-XX:MaxTenuringThreshold`可以设置。如果 YGC 要移送的对象大于Survivor 区容量的上限 ，直接移交给老年代。如果老年代也放不下触发FGC(Full Garbage Collection),FGC后再放不下OOM `-XX:+HeapDumpOnOutOfMemoryError` 发生OOM时输出堆栈信息
+
+**垃圾回收( Garbage Collection, GC )。垃圾回收的主要目的是 清除不再使用的对象，自动释放内存。**
+
+* 判断对象是否存活的标准
+如果 个对象与 GC Roots 之间没有直接或间接的引用关系，比如某个失去任何引用的对象，或者两个互相环岛状循环引用的对象等 则可以回收
+
+### 垃圾回收算法
+
+* 标记-清除算法
+![WX20190409-113319@2x](https://i.loli.net/2019/04/09/5cac12cd51392.png)
+从每个GC Roots出发，依次标记有引用关系的对象，最后将没有被标记的对象清除。但是这种算法会带来大量的空间碎片’导致需要分配 -个较大连续空间时容易触发 FGC。
+    1. 效率问题
+    2. 空间问题（标记清除后会产生大量不连续的碎片）
+* 标记-整理算法
+![WX20190409-113628@2x](https://i.loli.net/2019/04/09/5cac134d1dd45.png)
+类似磁盘整理， 标记存活的对象。将存活的对象整理到内存一端，形成连续的已使用空间，最后把已使用空间之 外的部分全部清理掉 ， 这样就不会产生空间碎片的问题。
+
+* Mark-Copy算法
+![WX20190409-113551@2x](https://i.loli.net/2019/04/09/5cac13237e925.png)
+能够并行地标记和整理将空间分为两块，每次只激活其中一块 ， 垃圾回收时只需把存活的对象复制到另一块未激活空间上，将未激活空间标记为己激活，将己激活空间标记为未激活，然后清除原空间中的原对象。堆内存空间分为较大的 Eden 和两块较小 的 Survivor，每次只使用 Eden 和 Survivor 区的块。这种情形下的“ Mark”Copy” 减 少了内存空间的浪费。 Mark-Copy 现在作为主流的YGC算法进行新生代的垃圾回收
+
+* 分代收集算法
+根据各个年代的特点选择合适的垃圾收集算法。
+
+比如在新生代中，每次收集都会有大量对象死去，所以可以选择**复制算法**，只需要付出少量对象的复制成本就可以完成每次垃圾收集。而老年代的对象存活几率是比较高的，而且没有额外的空间对它进行分配担保，所以我们必须选择**“标记-清除”或“标记-整理”**算法进行垃圾收集。
+
+### 垃圾回收器
+
+垃圾回收器( Garbage Collector )是实现垃圾回收算法并应用在 NM 环境中的内 存管理模块。当前实现的垃圾回收器有数十种，本节只介绍 Serial、 CMS、 Gl 三种。
+
+* Serial 回收器是一个主要应用于 YGC 的垃圾回收器，采用串行单线程的方式完 成 GC 任务，**单线程**  **Stop The World**  **新生代采用复制算法，老年代采用标记-整理算法** 如果频繁FGC影响性能  
+
+* CMS 回收器( Concurrent Mark Sweep Collector )是回收停顿时间比较短、目前
+比较常用的垃圾回收器。  **标记一清除算法** 大量垃圾碎片
+
+**CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。它而非常符合在注重用户体验的应用上使用。**
+
+**CMS（Concurrent Mark Sweep）收集器是HotSpot虚拟机第一款真正意义上的并发收集器，它第一次实现了让垃圾收集线程与用户线程（基本上）同时工作。**
+
+* G1 回收器
+
+**G1 (Garbage-First)是一款面向服务器的垃圾收集器,主要针对配备多颗处理器及大容量内存的机器. 以极高概率满足GC停顿时间要求的同时,还具备高吞吐量性能特征.**
+
+Hotspot在 JDK7 中推出了新代 G1 回收器和 CMS 相比， GI 具备压缩功能 ， 能避免碎片问题， GI 的暂停时间更加可控。性能总体还是非常不错的
+
+GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mark-Copy ， GI 的一大优势在于**可预测的停顿时间**， 能够尽可能快地在指定时间内完成垃圾回收任务。
 
 ## 类加载
 * 类加载机制
-
 虚拟机把描述类的数据从class文件加载到内存，并对数据进行校验、转换、解析和初始化。
 * **java语言中类型的加载连接以及初始化过程都是在程序运行期间完成的**
 
 这种策略虽然会使类加载时稍微增加一些性能开销，但是会为java应用程序提供高度的灵活性。java里天生就可以动态扩展语言特性就是依赖运行期间动态加载和动态连接这个特点实现的。比如，如果编写一个面向接口的程序，可以等到运行时再指定其具体实现类。
 * 类加载过程
-![enter image description here](https://mmbiz.qpic.cn/mmbiz_png/hvUCbRic69sAxRovHTCH3yyW1vpic22WVibSBjZicRXsFogpbuwicqugUaxFaIBQnXxwibQ0XTicKxxCVfb0L8sejJkjw/640?wx_fmt=png)
+![640](https://i.loli.net/2019/04/09/5cabf8e7bc39f.jpeg)
+
     * 加载
     1. 通过类型的完全限定名，产生一个代表该类型的二进制数据流
     2. 解析这个二进制数据流为方法区内的数据结构
@@ -278,6 +401,12 @@ request response pageContext session application out config page exception
     (4) 父类构造函数
     (5) 子类非静态代码块 ( 包括非静态初始化块，非静态属性 )
     (6) 子类构造函数
+* 对象的创建
+    ①类加载检查：检查这个符号引用代表的类是否已被加载过、解析和初始化过
+    ②分配内存 分配方式有 “指针碰撞” 和 “空闲列表” 两种
+    ③初始化零值
+    ④设置对象头 虚拟机要对对象进行必要的设置，例如这个对象是那个类的实例、如何才能找到类的元数据信息、对象的哈希吗、对象的 GC 分代年龄等信息。 这些信息存放在对象头中。 另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。
+    ⑤执行 init 方法： 在上面工作都完成之后，从虚拟机的视角来看，一个新的对象已经产生了，但从 Java 程序的视角来看，对象创建才刚开始，<init> 方法还没有执行，所有的字段都还为零。所以一般来说，执行 new 指令之后会接着执行 <init> 方法，把对象按照程序员的意愿进行初始化，这样一个真正可用的对象才算完全产生出来。
 * 类与类加载器
   对于任意一个类，都需要由加载它的类加载器和这个类本身一同确立其在Java虚拟机中的唯一性。**如果两个类来源于同一个Class文件，只要加载它们的类加载器不同，那么这两个类就必定不相等。**
 * 类加载器分类
@@ -2538,6 +2667,97 @@ revert是删除指定的commit操作的内容（指定的版本内容消失，�
 修复 BUG；
 完成 BUG 修复，结束 hotfix/v1.2.1，代码合并到 develop 和 master；
 
+
+# Apollo 
+## What
+随着程序功能的日益复杂，程序的配置日益增多：各种功能的开关、参数的配置、服务器的地址……
+对程序配置的期望值也越来越高：配置修改后实时生效，灰度发布，分环境、分集群管理配置，完善的权限、审核机制……
+在这样的大环境下，传统的通过配置文件、数据库等方式已经越来越无法满足开发人员对配置管理的需求。
+Apollo配置中心应运而生！
+
+## Why
+* 统一管理不同环境、不同集群的配置
+* 配置修改实时生效（热发布）
+* 版本发布管理
+* 灰度发布
+* 权限管理、发布审核、操作审计
+* 客户端配置信息监控
+* 提供Java和.Net原生客户端
+* 提供开放平台API
+* 部署简单
+## How
+
+### 整体架构
+![](https://github.com/ctripcorp/apollo/raw/master/doc/images/overall-architecture.png)
+#### ConfigService
+* 提供配置获取接口
+* 提供配置更新推送接口（基于Http long polling）
+    * 服务端使用Spring DeferredResult实现**异步化**，从而大大增加长连接数量
+    * 目前使用的tomcat embed默认配置是最多10000个连接（可以调整），使用了4C8G的虚拟机实测可以支撑10000个连接，所以满足需求（一个应用实例只会发起一个**长连接**）。
+* 接口服务对象为Apollo客户端
+#### Admin Service
+* 提供配置管理接口
+* 提供配置修改、发布等接口
+* 接口服务对象为Portal
+#### Meta Server
+* Meta Server从Eureka获取Config Service和Admin Service的服务信息，相当于是一个Eureka Client
+* 增设一个Meta Server的角色主要是为了封装服务发现的细节，对Portal和Client而言，永远通过一个Http接口获取Admin Service和Config Service的服务信息，而不需要关心背后实际的服务注册和发现组件
+* Meta Server只是一个逻辑角色，在部署时和Config Service是在一个JVM进程中的，所以IP、端口和Config Service一致
+#### Eureka
+* Config Service和Admin Service会向Eureka注册服务，并保持心跳
+* 为了简单起见，目前Eureka在部署时和Config Service是在一个JVM进程中的（通过Spring Cloud Netflix）
+
+**为什么采用Eureka作为服务注册中心，而不是传统的Zookeeper、etcd？**
+
+* 完整的Service Registry和Service Discovery实现 经过了Netflix生产环境的考验
+* 和SpringCloud 无缝集成。 Eureka还支持在我们应用自身的容器中启动，也就是说我们的应用启动完之后，既充当了Eureka的角色，同时也是服务的提供者。这样就极大的提高了服务的可用性。 减少外部依赖
+* 开源
+#### Portal
+* 提供Web界面供用户管理配置
+* 通过Meta Server获取Admin Service服务列表（IP+Port），通过IP+Port访问服务
+* 在Portal侧做load balance、错误重试
+#### Client
+
+* Apollo提供的客户端程序，为应用提供配置获取、实时更新等功能
+* 通过Meta Server获取Config Service服务列表（IP+Port），通过IP+Port访问服务
+* 在Client侧做load balance、错误重试
+
+### 服务端设计
+#### 配置发布后的实时推送设计
+![](https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/release-message-notification-design.png) 
+![](https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/release-message-design.png)
+**ReleaseMessage**
+没有引入mq 采用的扫描机制
+### 客户端设计
+
+![](https://github.com/ctripcorp/apollo/raw/master/doc/images/client-architecture.png)
+上图简要描述了Apollo客户端的实现原理：
+1. 客户端和服务端保持了一个长连接，从而能第一时间获得配置更新的推送。
+2. 客户端还会定时从Apollo配置中心服务端拉取应用的最新配置。
+    * 这是一个fallback机制，为了防止推送机制失效导致配置不更新
+    * 客户端定时拉取会上报本地版本，所以一般情况下，对于定时拉取的操作，服务端都会返回304 - Not Modified
+    * 定时频率默认为每5分钟拉取一次，客户端也可以通过在运行时指定System Property: apollo.refreshInterval来覆盖，单位为分钟。
+3. 客户端从Apollo配置中心服务端获取到应用的最新配置后，会保存在内存中
+4. 客户端会把从服务端获取到的配置在本地文件系统缓存一份
+5. 在遇到服务不可用，或网络不通的时候，依然能从本地恢复配置
+6. 应用程序从Apollo客户端获取最新的配置、订阅配置更新通知
+
+#### 配置更新推送实现 | Config Service通知客户端的实现方式
+前面提到了Apollo客户端和服务端保持了一个长连接，从而能第一时间获得配置更新的推送。
+
+长连接实际上我们是通过Http Long Polling实现的，具体而言：
+
+* 客户端发起一个Http请求到服务端
+* 服务端会保持住这个连接60秒
+    * 如果在60秒内有客户端关心的配置变化，被保持住的客户端请求会立即返回，并告知客户端有配置变化的namespace信息，客户端会据此拉取对应namespace的最新配置
+    * 如果在60秒内没有客户端关心的配置变化，那么会返回Http状态码304给客户端
+* 客户端在收到服务端请求后会立即重新发起连接，回到第一步
+
+考虑到会有数万客户端向服务端发起长连，在服务端我们使用了async servlet(Spring DeferredResult)来服务Http Long Polling请求。
+
+### 和Spring集成的原理
+Spring从3.1版本开始增加了ConfigurableEnvironment和PropertySource：
+![WX20190409-150047@2x](https://i.loli.net/2019/04/09/5cac43313f2f1.png)
 # 补充
 
 ## 限流 熔断
