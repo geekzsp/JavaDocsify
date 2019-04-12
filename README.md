@@ -6,7 +6,7 @@
     * 面向对象 容易写出低耦合的代码。利于维护和扩展、复用
 * 面向对象的4大特性 封装 继承 多态 抽象
     * 封装：把对象的属性私有化。同时提供一些可以让外界访问属性的方法。 对外屏蔽细节 可控
-    * 继承：使用已存在的类作为基础创建新类。新类可以增加新的数据和功能 有能够使用一些父类的功能
+    * 继承：使用已存在的类作为基础创建新类。新类可以增加新的数据和功能 又能够使用一些父类的功能
     * 多态：在编译时不确定 在运行时确定类型
 * Java语言的特点。简单易学  适合大型项目 多人协作  强类型  千人一面。 利于维护。 平台无关性  Write once, run anywhere 。可靠性 安全性 解决方案多。 开源社区活跃。
 * JVM（ Java virtual machine）是运行Java字节码的虚拟机。
@@ -391,22 +391,30 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
     而对于接口，当一个接口在初始化时，并不要求其父接口全部都完成了初始化，只有在真正使用到父接口时（如引用父接口中定义的常量）才会初始化。       
     **其他情况不会进行初始化**        
     ①通过子类引用父类静态字段，不会导致子类初始化； 
-    ②通过数组定义引用类，不会触发此类的初始化            
+
+    ②通过数组定义引用类，不会触发此类的初始化                       
+
     ③常量在编译阶段会存入调用类的常量池中，本质上并没有直接引用定义常量的类，因此不会触发定义常量的类的初始化        
 
 * 类初始化的加载顺序。         
-    (1) 父类静态代码块(包括静态初始化块，静态属性，但不包括静态方法) 
-    (2) 子类静态代码块(包括静态初始化块，静态属性，但不包括静态方法 )      
+    (1) 父类静态代码块(包括静态初始化块，静态属性，但不包括静态方法)        
+    (2) 子类静态代码块(包括静态初始化块，静态属性，但不包括静态方法 )           
     (3) 父类非静态代码块( 包括非静态初始化块，非静态属性 )     
     (4) 父类构造函数         
     (5) 子类非静态代码块 ( 包括非静态初始化块，非静态属性 )       
     (6) 子类构造函数       
 * 对象的创建
+
     ①类加载检查：检查这个符号引用代表的类是否已被加载过、解析和初始化过
+
     ②分配内存 分配方式有 “指针碰撞” 和 “空闲列表” 两种
+
     ③初始化零值
+
     ④设置对象头 虚拟机要对对象进行必要的设置，例如这个对象是那个类的实例、如何才能找到类的元数据信息、对象的哈希吗、对象的 GC 分代年龄等信息。 这些信息存放在对象头中。 另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。
+
     ⑤执行 init 方法： 在上面工作都完成之后，从虚拟机的视角来看，一个新的对象已经产生了，但从 Java 程序的视角来看，对象创建才刚开始，<init> 方法还没有执行，所有的字段都还为零。所以一般来说，执行 new 指令之后会接着执行 <init> 方法，把对象按照程序员的意愿进行初始化，这样一个真正可用的对象才算完全产生出来。
+
 * 类与类加载器
   对于任意一个类，都需要由加载它的类加载器和这个类本身一同确立其在Java虚拟机中的唯一性。**如果两个类来源于同一个Class文件，只要加载它们的类加载器不同，那么这两个类就必定不相等。**
 * 类加载器分类
@@ -419,7 +427,7 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
     加载用户类路径（ClassPath）上所指定的类库 一般情况下这个就是程序中默认的类加载器。
 ## 双亲委派模型
 * 双亲委派模型
-    ![](https://mmbiz.qpic.cn/mmbiz_png/hvUCbRic69sAxRovHTCH3yyW1vpic22WVibsIR7t9TpI4LlxD1hewI5HEy12YhMNtaFohOVOxibnrxCWpXic8Aib9VibQ/640?wx_fmt=png)
+    ![640 (1)](https://i.loli.net/2019/04/09/5cacbcf7cb111.jpeg)
 
     双亲委派模型（Pattern Delegation Model）,要求除了顶层的启动类加载器外，其余的类加载器都应该有自己的**父类加载器**。这里父子关系通常是子类通过**组合**关系而不是继承关系来复用父加载器的代码。
 
@@ -429,9 +437,135 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
 
     **委托机制的意义 — 防止内存中出现多份同样的字节码**
 
+
+* JDK中的ClassLoader
+```java
+1 protected synchronized Class<?> loadClass(String name, boolean   resolve)
+2     throws ClassNotFoundException
+3     {
+4     // First, check if the class has already been loaded
+5     Class c = findLoadedClass(name);
+6     if (c == null) {
+7         try {
+8         if (parent != null) {
+9             c = parent.loadClass(name, false);
+10         } else {
+11             c = findBootstrapClass0(name);
+12         }
+13         } catch (ClassNotFoundException e) {
+14             // If still not found, then invoke findClass in order
+15             // to find the class.
+16             c = findClass(name);
+17         }
+18     }
+19     if (resolve) {
+20         resolveClass(c);
+21     }
+22     return c;
+23     }
+```
+
+方法原理很简单，一步一步解释一下：
+
+1、第5行，首先查找.class是否被加载过
+
+2、第6行~第12行，如果.class文件没有被加载过，那么会去找加载器的父加载器。如果父加载器不是null（不是Bootstrap ClassLoader），那么就执行父加载器的loadClass方法，把类加载请求一直向上抛，直到父加载器为null（是Bootstrap ClassLoader）为止
+
+3、第13行~第17行，父加载器开始尝试加载.class文件，加载成功就返回一个java.lang.Class，加载不成功就抛出一个ClassNotFoundException，给子加载器去加载
+
+4、第19行~第21行，如果要解析这个.class文件的话，就解析一下，解析的作用类加载的文章里面也写了，主要就是将符号引用替换为直接引用的过程
+
+我们看一下findClass这个方法：
+```java
+protected Class<?> findClass(String name) throws ClassNotFoundException {
+    throw new ClassNotFoundException(name);
+    }
+```
+是的，没有具体实现，只抛了一个异常，而且是protected的，这充分证明了：这个方法就是给**开发者重写用的**。
+
+* 自定义类加载器
+
+1、如果不想打破双亲委派模型，那么只需要重写findClass方法即可
+2、如果想打破双亲委派模型，那么就重写整个loadClass方法 
+
+不打破双亲委派模型的 自定义类加载器开发步骤
+
+**第一步**，自定义一个实体类Person.java，我把它编译后的Person.class放在D盘根目录下
+
+**第二步**，自定义一个类加载器，里面主要是一些IO和NIO的内容，另外注意一下`defineClass`方法可以把二进制流字节组成的文件转换为一个java.lang.Class----只要二进制字节流的内容符合Class文件规范。我们自定义的MyClassLoader继承自java.lang.ClassLoader，就像上面说的，只实现findClass方法：
+```java
+public class MyClassLoader extends ClassLoader
+{
+    public MyClassLoader()
+    {
+        
+    }
+    
+    public MyClassLoader(ClassLoader parent)
+    {
+        super(parent);
+    }
+    
+    protected Class<?> findClass(String name) throws ClassNotFoundException
+    {
+        File file = getClassFile(name);
+        try
+        {
+            byte[] bytes = getClassBytes(file);
+            Class<?> c = this.defineClass(name, bytes, 0, bytes.length);
+            return c;
+        } 
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
+        
+        return super.findClass(name);
+    }
+    
+    private File getClassFile(String name)
+    {
+        File file = new File("D:/Person.class");
+        return file;
+    }
+    
+    private byte[] getClassBytes(File file) throws Exception
+    {
+        // 这里要读入.class的字节，因此要使用字节流
+        FileInputStream fis = new FileInputStream(file);
+        FileChannel fc = fis.getChannel();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        WritableByteChannel wbc = Channels.newChannel(baos);
+        ByteBuffer by = ByteBuffer.allocate(1024);
+        
+        while (true)
+        {
+            int i = fc.read(by);
+            if (i == 0 || i == -1)
+                break;
+            by.flip();
+            wbc.write(by);
+            by.clear();
+        }
+        
+        fis.close();
+        
+        return baos.toByteArray();
+    }
+}
+```
+**第三步**，Class.forName有一个三个参数的重载方法，可以指定类加载器，平时我们使用的Class.forName("XX.XX.XXX")都是使用的系统类加载器Application ClassLoader。
+
+```java
+MyClassLoader mcl = new MyClassLoader();        
+Class<?> c1 = Class.forName("com.xrq.classloader.Person", true, mcl); 
+```
+
+
 * 能不能自己写个类叫java.lang.System？
 
-答案：不能
+答案：可以 自定义类加载器 打破双亲委派模型。 重写loadClass方法
+
 解释：为了不让我们写System类，类加载采用委托机制，这样可以保证爸爸们优先，爸爸们能找到的类，儿子就没有机会加载。而System类是Bootstrap加载器加载的，就算自己重写，也总是使用Java系统提供的System，自己写的System类根本没有机会得到加载。
 
 即使我们自定义的类加载器也必须继承自ClassLoader，其loadClass()方法里调用了父类的defineClass()方法，并终究调到preDefineClass()方法，因此我们自定义的类加载器也是不能加载以“java.”开头的java类的。我们继续运行下ClassLoaderTest类，输出以下：
@@ -453,30 +587,16 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
     }
 }
 ```
-不是hotspot
-如果使用的是自定义的虚拟机是可以的 比如android 自定义的
-* 自定义类加载器步骤
 
-    （1）继承ClassLoader  
-    （2）重写findClass（）方法 
-    （3）调用defineClass（）方法 （final修饰）
+
 
 # 多线程与并发
 ## 线程
-* 一个进程可以产生多个线程。  与进程不同的是 同类的多个线程可以共享同一块内存空间和同一组系统资源 。所以新建线程和线程切换 负担比进程小得多。
-   线程(Thread)是进程的一个实体，是CPU调度和分派的基本单位。
-* 线程状态：  初始 运行 阻塞 等待 超时等待 终止
-* 线程的状态
-    ![](https://user-gold-cdn.xitu.io/2018/3/25/1625c6841963873b?w=876&h=492&f=png&s=-1)
-    * 新建(NEW)：新创建了一个线程对象
-    * 就绪(RUNNABLE) 调用start方法之后
-    * 运行(RUNNING) 获取到时间片 执行run方法
-    * 阻塞(BLOCKED)
-        * 等待阻塞 `object.wait`  进入等待队列  `notify` 进入锁池 
-        * 同步阻塞 被其他线程占用。  运行(running)的线程在获取对象的同步锁时，若该同步锁 被别的线程占用，则JVM会把该线程放入锁池(lock pool)中。 `synchronized` 
-        * 主动阻塞  主动让出CPU执行权`sleep join  io`
-    * 死亡(DEAD)
-        run执行结束，or 因异常退出  此状态不可逆转
+* 线程和进程的区别
+
+一个进程可以产生多个线程。与进程不同的是 同类的多个线程可以共享同一块内存空间和同一组系统资源 。所以新建线程和线程切换 负担比进程小得多。
+
+线程(Thread)是进程的一个实体，是CPU调度和分派的基本单位。
 * 多线程分类
     用户线程（执行具体的任务） 守护线程 （eg:垃圾回收线程）
    Thread setDaemon(true) 为守护线程
@@ -485,18 +605,76 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
     继承Thread  实现Runnable接口 实现Callable接口 线程池
 * 线程优先级具有继承特性比如A线程启动B线程，则B线程的优先级和A是一样的。线程优先级具有随机性也就是说线程优先级高的不一定每一次都先执行完。
      优先级 1 5  10  默认 5
-* join() 是阻塞的 “等待该线程终止”，换句话说就是：”当前线程等待子线程的终止“
+* 线程的6种状态：  
+    1. 初始(NEW)：新创建了一个线程对象，但还没有调用start()方法。
+    2. 运行(RUNNABLE)：Java线程中将就绪（ready）和运行中（running）两种状态笼统的称为“运行”。
+    线程对象创建后，其他线程(比如main线程）调用了该对象的start()方法。该状态的线程位于可运行线程池中，等待被线程调度选中，获取CPU的使用权，此时处于就绪状态（ready）。就绪状态的线程在获得CPU时间片后变为运行中状态（running）。
+    3. 阻塞(BLOCKED)：表示线程阻塞于锁。
+    4. 等待(WAITING)：进入该状态的线程需要等待其他线程做出一些特定动作（通知或中断）。
+    5. 超时等待(TIMED_WAITING)：该状态不同于WAITING，它可以在指定的时间后自行返回。
+    6. 终止(TERMINATED)：表示该线程已经执行完毕。
 
+这6种状态定义在Thread类的State枚举中，可查看源码进行一一对应。
+* 线程状态图
+
+![](https://img-blog.csdnimg.cn/20181120173640764.jpeg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3BhbmdlMTk5MQ==,size_16,color_FFFFFF,t_70)
+
+>
+    1. 初始状态
+    实现Runnable接口和继承Thread可以得到一个线程类，new一个实例出来，线程就进入了初始状态。
+
+    2.1. 就绪状态
+    就绪状态只是说你资格运行，调度程序没有挑选到你，你就永远是就绪状态。
+    调用线程的start()方法，此线程进入就绪状态。
+    当前线程sleep()方法结束，其他线程join()结束，等待用户输入完毕，某个线程拿到对象锁，这些线程也将进入就绪状态。
+    当前线程时间片用完了，调用当前线程的yield()方法，当前线程进入就绪状态。
+    锁池里的线程拿到对象锁后，进入就绪状态。
+    2.2. 运行中状态
+    线程调度程序从可运行池中选择一个线程作为当前线程时线程所处的状态。这也是线程进入运行状态的唯一一种方式。
+
+    3. 阻塞状态
+    阻塞状态是线程等待进入synchronized关键字修饰的方法或代码块(获取锁)时的状态。
+
+    4. 等待
+    处于这种状态的线程不会被分配CPU执行时间，它们要等待被显式地唤醒，否则会处于无限期等待的状态。
+
+    5. 超时等待
+    处于这种状态的线程不会被分配CPU执行时间，不过无须无限期等待被其他线程显示地唤醒，在达到一定时间后它们会自动唤醒。
+
+    6. 终止状态
+    当线程的run()方法完成时，或者主线程的main()方法完成时，我们就认为它终止了。这个线程对象也许是活的，但是，它已经不是一个单独执行的线程。线程一旦终止了，就不能复生。
+    在一个终止的线程上调用start()方法，会抛出java.lang.IllegalThreadStateException异常。
+
+
+
+## Thread 的方法
+![WX20190308-151925@2x](https://i.imgur.com/N0BbKOi.png)
+![WX20190308-1512033@2x](https://i.imgur.com/10qKvBB.png)
+
+* Thread.sleep(long millis)，一定是当前线程调用此方法，当前线程进入TIMED_WAITING状态，但不释放对象锁，millis后线程自动苏醒进入就绪状态。作用：给其它线程执行机会的最佳方式。
+* Thread.yield()，一定是当前线程调用此方法，当前线程放弃获取的CPU时间片，但不释放锁资源，由运行状态变为就绪状态，让OS再次选择线程。作用：让相同优先级的线程轮流执行，但并不保证一定会轮流执行。实际中无法保证yield()达到让步目的，因为让步的线程还有可能被线程调度程序再次选中。Thread.yield()不会导致阻塞。该方法与sleep()类似，只是不能由用户指定暂停多长时间。
+
+* thread.join()/thread.join(long millis)当前线程里调用其它线程t的join方法，当前线程进入WAITING/TIMED_WAITING状态，当前线程不会释放已经持有的对象锁。线程t执行完毕或者millis时间到，当前线程一般情况下进入RUNNABLE状态，也有可能进入BLOCKED状态（因为join是基于wait实现的）。
+
+!> 是阻塞的 “等待该线程终止”，换句话说就是：”当前线程等待子线程的终止“
 如果一个线程A执行了thread.join()语句，其含义是：当前线程A等待thread线程终止之后才从thread.join()返回。
-* 
-    ![WX20190308-151925@2x](https://i.imgur.com/N0BbKOi.png)
-    ![WX20190308-1512033@2x](https://i.imgur.com/10qKvBB.png)
 
-  
+* obj.wait()，当前线程调用对象的wait()方法，当前线程释放对象锁，进入等待队列。依靠notify()/notifyAll()唤醒或者wait(long timeout) timeout时间到自动唤醒。
+* obj.notify()唤醒在此对象监视器上等待的单个线程，选择是任意性的。notifyAll()唤醒在此对象监视器上等待的所有线程。
+* 等待队列里许许多多的线程都wait()在一个对象上，此时某一线程调用了对象的notify()方法，那唤醒的到底是哪个线程？随机？队列FIFO？or sth else？Java文档就简单的写了句：选择是任意性的（The choice is arbitrary and occurs at the discretion of the implementation）。
+* sleep和 wait的对比
+
+共同点： 都不会占用时间片 。
+
+不同点：
+1. sleep 不会释放锁
+2. wait会释放锁 obj.wait()，当前线程调用对象的wait()方法，当前线程释放对象锁，进入等待队列。依靠notify()/notifyAll()((notify实际上该线程同步块运行结束后才会释放锁)唤醒或者wait(long timeout) timeout时间到自动唤醒。
+
 ## Object wait notify 通知机制
 * Object wait notify
-   ![WX20190308-1031124@2x](https://i.imgur.com/VZwjHqT.png)
-    ![WX20190308-103124@2x](https://i.imgur.com/AHjUMY7.png)
+
+![WX20190308-1031124@2x](https://i.imgur.com/VZwjHqT.png)
+![WX20190308-103124@2x](https://i.imgur.com/AHjUMY7.png)
    
     wait()  使调用该方法的线程释放共享资源锁，然后从运行状态退出，进入等待队列。知道被再次唤醒
     notify() 随机唤醒等待队列中等待统一共享资源的“一个线程”，并使该线程退出等待队列，进入可运行状态。也就是notify()方法仅通知“一个线程”
@@ -512,13 +690,22 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
     }
     #----------------------
     synchronized(对象) {
-       while(条件不满足) {
-              对象.wait();
-       }
-       对应的处理逻辑
+     改变条件
+     对象.notifyAll();
     }
      ```
 * 当方法wait()被执行后，锁自动被释放，但执行完notify()方法后，锁不会自动释放。必须执行完notify()方法所在的synchronized代码块后才释放。
+## 等待队列 与同步队列
+
+![](https://img-blog.csdn.net/20180701221233161?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3BhbmdlMTk5MQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+
+同步队列里面放的都是想争夺对象锁的线程。
+等待队列： 释放锁之后进入等待队列
+
+o.wait  执行完此方法的线程进入等待队列
+o.notifyAll() 将所有的等待队列中的线程 移入同步队列  竞争获取锁。 执行完代码块 此线程进入等待队列
+
+
 * 管道输入输出通信流 主要用于线程之间的数据传输 且传输的媒介为内存
   * 面向字节 PipedOutputStream PipedInputStream
   * 面向字符 PipedWriter PipedReader
@@ -533,8 +720,14 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
     * 每个线程持有一个 Map 并维护了 ThreadLocal 对象与具体实例的映射，该 Map 由于只被持有它的线程访问，故不存在线程安全以及锁的问题
     * ThreadMap中数据存储不是用HashMap实现的，而是用Entry[]数组实现，用ThreadLocal的hash值来&长度作为下标，模拟Map。
     * ThreadLocalMap 的 Entry 对 ThreadLocal 的引用为弱引用，避免了 ThreadLocal 对象无法被回收的问题
-    * ThreadLocalMap 的 set 方法通过调用 replaceStaleEntry 方法回收键为 null 的 Entry 对象的值（即为具体实例）以及 Entry 对象本身从而防止内存泄漏
+    * ThreadLocalMap 的 set 方法通过调用 replaceStaleEntry 方法回收键为 null 的 Entry 对象的值（即为具体实例）以及 Entry 对象本身从而防止内存泄
     * ThreadLocal 适用于变量在线程间隔离且在方法间共享的场景
+
+!> Thread为每个线程维护了ThreadLocalMap这么一个Map，而ThreadLocalMap的key是LocalThread对象本身，value则是要存储的对象
+
+!> 由于ThreadLocalMap的生命周期跟Thread一样长，如果没有手动删除对应key就会导致内存泄漏，而不是因为弱引用。
+
+![](https://user-gold-cdn.xitu.io/2018/4/3/162896ab1a1d1e2e?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 
 * **线程安全性问题存在于实例变量。 访问同一实例的变量 可能会产生线程安全问题**
 
@@ -632,12 +825,54 @@ volatile关键字用于解决变量在多个线程之间的可见性，而synchr
         在Java中，自旋锁是指尝试获取锁的线程不会立即阻塞，而是采用循环的方式去尝试获取锁，这样的好处是减少线程上下文切换的消耗，缺点是循环会消耗CPU。
 
 
-* AQS(AbstractQueuedSynchronizer）)
+* AQS(AbstractQueuedSynchronizer）) 队列同步器
 
-AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程阻塞等待以及被唤醒时锁分配的机制，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到锁的线程加入到队列中。
-    AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要一套线程注释
-## 并发工具类
+AQS是构建锁或者其他同步组件的基础框架（如ReentrantLock、ReentrantReadWriteLock、Semaphore等），
+
+AQS核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。如果被请求的共享资源被占用，那么就需要**一套线程阻塞等待以及被唤醒时锁分配的机制**，这个机制AQS是用CLH队列锁实现的，即将暂时获取不到锁的线程加入到队列中。
+
+AQS解决了子啊实现同步器时涉及当的大量细节问题，例如获取同步状态、FIFO同步队列。基于AQS来构建同步器可以带来很多好处。它不仅能够极大地减少实现工作，而且也不必处理在多个位置上发生的竞争问题。
+
+在基于AQS构建的同步器中，只能在一个时刻发生阻塞，从而降低上下文切换的开销，提高了吞吐量。同时在设计AQS时充分考虑了可伸缩行，因此J.U.C中所有基于AQS构建的同步器均可以获得这个优势。
+
+AQS使用一个int类型的成员变量`state`来表示同步状态，当state>0时表示已经获取了锁，当state = 0时表示释放了锁。它提供了三个方法（`getState()`、`setState(int newState)`、`compareAndSetState(int expect,int update)`）来对同步状态state进行操作，当然AQS可以确保对state的操作是安全的。
+
+CLH同步队列是一个FIFO双向队列，AQS依赖它来完成同步状态的管理，**当前线程如果获取同步状态失败时，AQS则会将当前线程已经等待状态等信息构造成一个节点（Node）并将其加入到CLH同步队列**，同时会阻塞当前线程，当同步状态释放时，会把首节点唤醒（公平锁），使其再次尝试获取同步状态。
+
+![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1dc31c5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+**入列**
+![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1eb4e4a?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+tail指向新节点、新节点的prev指向当前最后的节点，当前最后一个节点的next指向当前节点
+**出列**
+![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1f51346?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+CLH同步队列遵循FIFO，首节点的线程释放同步状态后，将会唤醒它的后继节点（next），而后继节点将会在获取同步状态成功时将自己设置为首节点，这个过程非常简单，**head指向该节点并断开原首节点的next和当前节点的prev即可**，注意在这个过程是不需要使用CAS来保证的，因为只有一个线程能够成功获取到同步状态。
+## 并发工具类 
 * Semaphore(信号量)-允许多个线程同时访问 
+```java
+public class SemaphoreTest {
+	private static final int THREAD_COUNT = 30;
+	private static ExecutorService threadPool = Executors
+			.newFixedThreadPool(THREAD_COUNT);
+	private static Semaphore s = new Semaphore(10);
+	public static void main(String[] args) {
+		for (int i = 0; i < THREAD_COUNT; i++) {
+			threadPool.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						s.acquire();
+						System.out.println("save data");
+						s.release();
+					} catch (InterruptedException e) {
+					}
+				}
+			});
+		}
+		threadPool.shutdown();
+	}
+}
+```
 * CountDownLatch(倒计时器) 允许一个或多个线程一直等待，直到其他线程的操作执行完后再执行   
 
 ①某一线程在开始运行前等待n个线程执行完毕。将 CountDownLatch 的计数器初始化为n ：`new CountDownLatch(n) `，每当一个任务线程执行完毕，就将计数器减1 `countdownlatch.countDown()`，当计数器的值变为0时，在`CountDownLatch上 await()` 的线程就会被唤醒。一个典型应用场景就是启动一个服务时，主线程需要等待多个组件加载完毕，之后再继续执行。        
@@ -681,10 +916,10 @@ milliseconds,runnableTaskQueue, handler);
     * TimeUnit:单位
     * runnableTaskQueue：任务队列 LinkedBlockingQueue、ArrayBlockingQueue、PriorityBlockingQueue、SynchronousQueue
     * RejectedExecutionHandler：饱和策略 
-        * 直接抛出异常 AbortPolicy 
-        * 丢弃队列里最近的一个任务，并执行当前任务 CallerRunsPolicy
-        * 不处理 丢弃资源 DiscardOldestPolicy
-        * 只有调用者所在的线程运行任务 DiscardPolicy
+        * AbortPolicy (默认):丢弃任务并抛出 RejectedExecutionException 异常。
+        * DiscardPolicy: 丢弃任务，但是不抛出异常 ， 这是不推荐的做法。
+        * DiscardOldestPolicy: 抛弃队列中等待最久的任务 ， 然后把当前任务加入队 列中。
+        * CalerRunsPolicy:调用任务的 run()方法绕过线程池直接执行。
 * 向线程池提交任务
     * execute 不带返回值
     * submit 带返回值 future
@@ -702,17 +937,13 @@ milliseconds,runnableTaskQueue, handler);
 数也是最大线程数 ， 不存在空闲线程，所以 keepAliveTime 等于 O
     
 # JAVA IO
+!> 同步和异步关注的是**消息通信机制**
+* 同步：在发出一个调用时，在没有得到结果之前，该调用就不返回。但是一旦调用返回，就得到返回值了。
+* 异步：调用发出之后，这个调用就直接返回了，所以没有返回结果
 
-* 同步和异步 阻塞 非阻塞
-    * 同步和异步关注的是消息通信机制
-    * 同步：在发出一个调用时，在没有得到结果之前，该调用就不返回。但是一旦调用返回，就得到返回值了。
-    异步：调用发出之后，这个调用就直接返回了，所以没有返回结果
-
-    * 阻塞和非阻塞：程序在等待调用结果时的状态。
-    * 阻塞调用是指调用结果返回之前，当前线程会被挂起。调用线程只有在得到结果之后才会返回。
-    * 非阻塞调用指在不能立刻得到结果之前，该调用不会阻塞当前线程。
-    * 阻塞：调用结果返回之前，当前线程会被挂起。调用线程只有在得到结果之后才会返回。
-    * 非阻塞：在不能立刻得到结果之前。该调用不会阻塞当前线程
+!> 阻塞和非阻塞：程序在**等待调用结果时的状态。**
+* 阻塞调用是指调用结果返回之前，当前线程会被挂起。调用线程只有在得到结果之后才会返回。
+* 非阻塞调用指在不能立刻得到结果之前，该调用不会阻塞当前线程。
 * IO 分类
     * BIO(Block-IO)阻塞IO
     * NIO(Non-Block-IO)非阻塞IO
@@ -727,7 +958,9 @@ milliseconds,runnableTaskQueue, handler);
 ## Spring IOE （Inversion of Control）
 
 依赖注入(Dependency Injection)和控制反转(IOC)是从不同的角度的描述的同一件事情，就是指通过引入IOC容器，利用依赖关系注入的方式，实现对象之间的解耦。
+
 Spring IOC 负责创建对象，管理对象（通过依赖注入（DI），装配对象，配置对象，并且管理这些对象的整个生命周期。
+
 **Spring IOC的初始化过程**
 ![](https://camo.githubusercontent.com/3b07a520440ff631990c027c2437d131fba25efe/68747470733a2f2f757365722d676f6c642d63646e2e786974752e696f2f323031382f352f32322f313633383739303365653732633833313f773d37303926683d353626663d706e6726733d34363733)
 
@@ -867,10 +1100,10 @@ public class CustomerBeanPostProcessor implements BeanPostProcessor {
 * 什么是事务
 逻辑上的一组操作 要么都执行，要么都不执行
 * 事务特性
-    * 原子性：事务是最小的执行单位，不允许分割。事务的原子性确保动作要么全部完成要么全部失败
-    * 一致性：从一个一致的状态转换到另一个一致状态
-    * 隔离性：并发访问数据库时，一个用户的事务不被其他事务所干扰
-    * 持久性：一个事务被提交后 数据的改变是持久的
+    * 原子性（Atomicity）：事务是最小的执行单位，不允许分割。事务的原子性确保动作要么全部完成要么全部失败
+    * 一致性（Consistency）：从一个一致的状态转换到另一个一致状态 是数据库中的数据开始是正确的，随着状态转移，总是保持正确的状态
+    * 隔离性（Isolation）：并发访问数据库时，一个用户的事务不被其他事务所干扰
+    * 持久性（Durability）：一个事务被提交后 数据的改变是持久的
 * 带来的问题
 
 **脏读（Dirty read）:** 当一个事务正在访问数据并且对数据进行了修改，而这种修改还没有提交到数据库中，这时另外一个事务也访问了这个数据，然后使用了这个数据。因为这个数据是还没有提交的数据，那么另外一个事务读到的这个数据是“脏数据”，依据“脏数据”所做的操作可能是不正确的。
@@ -882,6 +1115,7 @@ public class CustomerBeanPostProcessor implements BeanPostProcessor {
 
 **幻读（Phantom read）:** 幻读与不可重复读类似。它发生在一个事务（T1）读取了几行数据，接着另一个并发事务（T2）插入了一些数据时。在随后的查询中，第一个事务（T1）就会发现多了一些原本不存在的记录，就好像发生了幻觉一样，所以称为幻读。
 
+!> 但不可重复读重点在于update和delete，而幻读的重点在于insert。
 * 事务隔离级别
 
 **READ_UNCOMMITTED（未提交读）:** 最低的隔离级别，允许读取尚未提交的数据变更，可能会导致脏读、幻读或不可重复读
@@ -928,6 +1162,74 @@ public class RestTemplateAop {
     静态代理：AspectJ  编译时生成代理类 （静态性能好 但是需要特定的编译器）
     动态代理：JDK动态代理 （反射 以及必须实现接口（因为需要根据接口动态生成类）  Proxy类和 InvocationHandler接口） CGLIB动态代理 （没有实现接口 走这个方式 生成 需要代理类的子类来增强 被final标记的类不能使用此方法）
 
+* JDK Proxy
+
+```java
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.util.Date;
+
+public class LogHandler implements InvocationHandler {
+    Object target;  // 被代理的对象，实际的方法执行者
+
+    public LogHandler(Object target) {
+        this.target = target;
+    }
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        before();
+        Object result = method.invoke(target, args);  // 调用 target 的 method 方法
+        after();
+        return result;  // 返回方法的执行结果
+    }
+    // 调用invoke方法之前执行
+    private void before() {
+        System.out.println(String.format("log start time [%s] ", new Date()));
+    }
+    // 调用invoke方法之后执行
+    private void after() {
+        System.out.println(String.format("log end time [%s] ", new Date()));
+    }
+}
+
+```
+
+```java
+import proxy.UserService;
+import proxy.UserServiceImpl;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+
+public class Client2 {
+    public static void main(String[] args) throws IllegalAccessException, InstantiationException {
+        // 设置变量可以保存动态代理类，默认名称以 $Proxy0 格式命名
+        // System.getProperties().setProperty("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+        // 1. 创建被代理的对象，UserService接口的实现类
+        UserServiceImpl userServiceImpl = new UserServiceImpl();
+        // 2. 获取对应的 ClassLoader
+        ClassLoader classLoader = userServiceImpl.getClass().getClassLoader();
+        // 3. 获取所有接口的Class，这里的UserServiceImpl只实现了一个接口UserService，
+        Class[] interfaces = userServiceImpl.getClass().getInterfaces();
+        // 4. 创建一个将传给代理类的调用请求处理器，处理所有的代理对象上的方法调用
+        //     这里创建的是一个自定义的日志处理器，须传入实际的执行对象 userServiceImpl
+        InvocationHandler logHandler = new LogHandler(userServiceImpl);
+        /*
+		   5.根据上面提供的信息，创建代理对象 在这个过程中，
+               a.JDK会通过根据传入的参数信息动态地在内存中创建和.class 文件等同的字节码
+               b.然后根据相应的字节码转换成对应的class，
+               c.然后调用newInstance()创建代理实例
+		 */
+        UserService proxy = (UserService) Proxy.newProxyInstance(classLoader, interfaces, logHandler);
+        // 调用代理的方法
+        proxy.select();
+        proxy.update();
+        
+        // 保存JDK动态代理生成的代理类，类名保存为 UserServiceProxy
+        // ProxyUtils.generateClassFile(userServiceImpl.getClass(), "UserServiceProxy");
+    }
+}
+
+```
 ## Spring MVC
 * 流程
 ![](https://camo.githubusercontent.com/6889f839138de730fce5f6a0d64e33258a2cf9b5/687474703a2f2f6d792d626c6f672d746f2d7573652e6f73732d636e2d6265696a696e672e616c6979756e63732e636f6d2f31382d31302d31312f34393739303238382e6a7067)
@@ -1050,12 +1352,12 @@ public class LogCostInterceptor implements HandlerInterceptor {
         return true;
     }
  
-    @Override
+    @Override  //渲染视图之前
     public void postHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, ModelAndView modelAndView) throws Exception {
         System.out.println("Interceptor cost="+(System.currentTimeMillis()-start));
     }
  
-    @Override
+    @Override //渲染视图之后 一般用于清理资源
     public void afterCompletion(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object o, Exception e) throws Exception {
     }
 }
@@ -1078,9 +1380,8 @@ public class InterceptorConfig extends WebMvcConfigurerAdapter {
 * 采用MapperScannerConfigurer，它将会查找类路径下的映射器并自动将它们创建成MapperFactoryBean。
 * #{} 和 ${} 的区别
 
-!> \#{}是预编译处理，${}是字符串替换
+!> \#{}是预编译处理，${}是字符串替换   表名、order by的排序字段作为变量时，使用${}。
 
-?>  TODO
 * resultMap 映射 实体类和 表 resultType  parameterType
 * select LAST_INSERT_ID() 
 * 缓存
@@ -1111,6 +1412,7 @@ public class InterceptorConfig extends WebMvcConfigurerAdapter {
 
 自带的分页是使用RowBounds对象进行分页 内存分页 不推荐使用
 可以使用 直接sql limit 或者 分页插件进行物理分页
+
 # Mysql
 ## 基础
 * insert
@@ -1140,13 +1442,13 @@ FROM table_name
 [WHERE Clause]
 [LIMIT N][ OFFSET M]
 ```
-* 关于join时的顺序(小表在前, 大表在后) 节省运算
+* 关于join时的顺序(小表在前, 大表在后) 节省运算，在小表和大表进行join时，将小表放在前边，效率会高，hive会将小表进行缓存。
 * DISTINCT
 * ORDER BY 
 * GROUP BY
 * LEFT JOIN（左连接） RIGHT JOIN（右连接）
 * ALTER
-* TRUNCATE
+* 当你不再需要该表时， 用 drop；当你仍要保留该表，但要删除所有记录时， 用 truncate；当你要删除部分记录时（always with a WHERE clause), 用 delete.
 * utf8 utf8mb4
 
 ## 优化/规范
@@ -1190,6 +1492,7 @@ MyISAM更适合读密集的表，而InnoDB更适合写密集的的表 MyISAM只�
 * 4，**索引列不能参与计算**，尽量保持列“干净”。比如，FROM_UNIXTIME(create_time) = '2016-06-06' 就不能使用索引，原因很简单，B+树中存储的都是数据表中的字段值，但是进行检索时，需要把所有元素都应用函数才能比较，显然这样的代价太大。所以语句要写成 ： create_time = UNIX_TIMESTAMP('2016-06-06')。
 * 5，尽可能的**扩展索引**，不要新建立索引。比如表中已经有了a的索引，现在要加（a,b）的索引，那么只需要修改原来的索引即可。
 * 6，单个多列组合索引和多个单列索引的检索查询效果不同，因为在**执行SQL时，MySQL只能使用一个索引**，会从多个单列索引中选择一个限制最为严格的索引。
+
 ##锁
 ![](https://user-gold-cdn.xitu.io/2018/7/23/164c6d7ae44d8ac6?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
 
@@ -1198,7 +1501,7 @@ MyISAM更适合读密集的表，而InnoDB更适合写密集的的表 MyISAM只�
 **行锁**
 开销大，加锁慢；会出现死锁；锁定粒度小，发生锁冲突的概率低，并发度高
 
-InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB将使用表锁
+**InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB将使用表锁**
 
 表锁其实我们程序员是很少关心它的：
 在MyISAM存储引擎中，当执行SQL语句的时候是自动加的。
@@ -1209,6 +1512,7 @@ InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB�
 `select * from xxxx for update`
 **乐观锁**
 `version`
+
 ## 切分
 * 水平切分
 
@@ -1240,6 +1544,7 @@ InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB�
 
 **客户端代理：** 分片逻辑在应用端，封装在jar包中，通过修改或者封装JDBC层来实现。 当当网的 Sharding-JDBC 、阿里的TDDL是两种比较常用的实现。
 **中间件代理：** 在应用和数据中间加了一个代理层。分片逻辑统一维护在中间件服务中。 我们现在谈的 Mycat 、360的Atlas、网易的DDB等等都是这种架构的实现。
+
 # zookeeper
 ## 是什么
 * ZooKeeper是一个开源分布式协调框架 Zk=文件系统+通知机制
@@ -1253,13 +1558,14 @@ InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB�
 * 实时性。在一定时间范围之内，client能读到最新数据
 
 ## 能做什么
-0.注册中心 
+
+0.注册中心      
 1.命名服务   
 2.配置管理   
 3.集群管理   
 4.分布式锁  
-5.队列管理 
-6.服务器节点动态上下线
+5.队列管理       
+6.服务器节点动态上下线         
 7. 数据的发布订阅 watcher
 ![WX20190318-111342@2x](https://i.imgur.com/2KakJku.png)
 
@@ -1284,6 +1590,15 @@ InnoDB只有通过索引条件检索数据才使用行级锁，否则，InnoDB�
 ## 集群 
 * 类似Master/Slave， 一个leader 多个follower，leader负责发起投票、进行决议已经更新系统状态。follower用于接收客户请求返回结果，参与投票。
 * 半数以上节点存活 即可工作 >n/2 
+
+## 选举  LeaderElection
+目前有5台服务器，每台服务器均没有数据，它们的编号分别是1,2,3,4,5,按编号依次启动，它们的选择举过程如下：
+
+* 服务器1启动，给自己投票，然后发投票信息，由于其它机器还没有启动所以它收不到反馈信息，服务器1的状态一直属于Looking。
+* 服务器2启动，给自己投票，同时与之前启动的服务器1交换结果，由于服务器2的编号大所以服务器2胜出，但此时投票数没有大于半数，所以两个服务器的状态依然是LOOKING。
+* 服务器3启动，给自己投票，同时与之前启动的服务器1,2交换信息，由于服务器3的编号最大所以服务器3胜出，此时投票数正好大于半数，所以服务器3成为领导者，服务器1,2成为小弟。
+* 服务器4启动，给自己投票，同时与之前启动的服务器1,2,3交换信息，尽管服务器4的编号大，但之前服务器3已经胜出，所以服务器4只能成为小弟。
+服务器5启动，后面的逻辑同服务器4成为小弟。
 
 ## 写数据过程
 收到请求发给leader 然后leader发给follower 多数 follower写成功就成功
@@ -1362,6 +1677,7 @@ System.out.println(event.getType() + "--" + event.getPath());
 
 ## What 什么是Es
 Es是一个全文搜索引擎，它可以快速地储存、搜索和分析海量数据。
+
 ## Why  为什么要用Es，能解决什么问题，和其他相比有什么好处
 !> 全文搜索引擎胜在快速和高效的查询大批量**非结构化**的文本
 
@@ -1452,6 +1768,7 @@ curl 'localhost:9200/accounts/person/_search'  -d
   }
 }'
 ```
+
 ## Java 客户端
 ES支持的客户端连接方式
 1. REST API ，端口 9200   Java High Level REST Client API  推荐！
@@ -1504,6 +1821,7 @@ SearchHit[] hits = searchResponse.getHits().getHits();
 Motan是一套高性能、易于使用的分布式远程服务调用(RPC)框架。
 
 Motan是一套基于java开发的RPC框架，除了常规的点对点调用外，Motan还提供服务治理功能，包括服务节点的自动发现、摘除、高可用和负载均衡等。Motan具有良好的扩展性，主要模块都提供了多种不同的实现，例如支持多种注册中心，支持多种rpc协议等。
+
 ## Why   为什么要使用，解决了什么问题。有什么优点。和竞品对比
 
 * 支持通过spring配置方式集成，无需额外编写代码即可为服务提供分布式调用能力。
@@ -1561,6 +1879,7 @@ Client端使用的模块，cluster是一组可用的Server在**逻辑上的封�
 ![](https://github.com/weibocom/motan/wiki/media/14612385789967.jpg)
 
 Client端订阅Service后，会从Registry中得到能够提供对应Service的一组Server，Client把这一组Server看作一个提供服务的cluster。当cluster中的Server发生变更时，Client端的register模块会通知Client进行更新。
+
 ### 处理调用异常
 
 * 业务代码异常
@@ -1573,18 +1892,22 @@ Client端订阅Service后，会从Registry中得到能够提供对应Service的�
 
 * MotanFrameworkException
 框架异常，比如系统启动、关闭、服务暴露、服务注册等非请求情况下出现问题，Motan会抛出此类异常。
+
 ### 负载均衡
 * ActiveWeight(缺省)  低并发度优先： referer 的某时刻的 call 数越小优先级越高
 * Random
 * RoundRobin 轮询
 * Consistent 一致性 Hash，相同参数的请求总是发到同一提供者
 * ConfigurableWeight 权重可配置的负载均衡策略
+
 ### 容错策略
 
 Motan 在集群调用失败时，提供了两种容错方案，并支持自定义扩展。 高可用集群容错策略在Client端生效，因此需在Client端添加配置 目前支持的集群容错策略有：
 * Failover 失效切换（缺省） 失败自动切换，当出现失败，重试其它服务器。
 * Failfast 快速失败 只发起一次调用，失败立即报错。
+
 ### 注册中心与服务发现
+
 ### 优雅的停止服务
 
 Motan支持在Consul、ZooKeeper集群环境下优雅的关闭节点，当需要关闭或重启节点时，可以先将待上线节点从集群中摘除，避免直接关闭影响正常请求。
@@ -1596,6 +1919,77 @@ MotanSwitcherUtil.setSwitcherValue(MotanConstants.REGISTRY_HEARTBEAT_SWITCHER, f
 ```
 # HBase 
 
+## What  
+我们主要用来存储一些 运营商数据  数据量很大。且  非规则
+HBase是Apache的Hadoop项目的子项目，是Hadoop Database的简称。
+
+HBase是一个高可靠性、高性能、面向列、可伸缩的分布式存储系统，利用HBase技术可在廉价PC Server上搭建起大规模结构化存储集群。
+
+HBase不同于一般的关系数据库，它是一个适合于**非结构化数据存储**的数据库，HBase**基于列**的而不是基于行的模式。
+## Why
+
+hbase表的特性
+
+1、大
+
+hbase表可以存储海量的数据。
+2、无模式
+
+mysql表中每一行列的字段是相同，而hbase表中每一行数据可以有截然不同的列。
+3、面向列
+
+hbase表中的数据可以有很多个列，后期它就是按照不同的列去存储数据，写入到不同的文件中。
+面向列族进行存储数据。
+4、稀疏
+
+在hbase表中为null的列并不占用实际的存储空间。
+5、数据的多版本
+
+对于hbase表中的数据在进行数据更新的时候，它并没有把之前的结果数据直接删除掉，而是保留数据的多个版本，每一个数据都给一个版本号，这个版本号就是按照我们插入数据的时间戳去确定。
+6、数据类型单一
+
+无论是什么类型的数据，最后都被转换成了字节数组存储在hbase表中
+
+
+
+## How
+
+### 数据模型
+
+![](https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6AvECce69uqxAGjO2tFu95JpZnOXttW9e3Gm1fvl2FN8xaaQpVxfeFcCApyT8v3S5JfTXmkosGCpA/640?tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+稀疏矩阵、 黑块就是key value
+
+#### RowKey
+用来表示唯一一行记录的主键，HBase的数据是按照RowKey的字典顺序进行全局排序的，所有的查询都只能依赖于这一个排序维度。
+
+>通过下面一个例子来说明一下"字典排序"的原理：
+RowKey列表{"abc", "a", "bdf", "cdf", "def"}按字典排序后的结果为{"a", "abc", "bdf", "cdf", "defg"}
+也就是说，当两个RowKey进行排序时，先对比两个RowKey的第一个字节，如果相同，则对比第二个字节，依次类推...如果在对比到第M个字节时，已经超出了其中一个RowKey的字节长度，那么，短的RowKey要被排在另外一个RowKey的前面。
+
+#### 稀疏矩阵
+![](https://mmbiz.qpic.cn/mmbiz_jpg/licvxR9ib9M6AvECce69uqxAGjO2tFu95JwRSQibooSA48r8eibQyfsGnUByzvyVZb5IOynYeicibO3eyFQQsRjJjia3A/640?tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+**每一行中，列的组成都是灵活的，行与行之间并不需要遵循相同的列定义**
+
+#### Region
+
+**横向切割**成一个个"子表"，这一个个"子表"就是Region
+![](https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6AvECce69uqxAGjO2tFu95JaGQREjtjRR7nnRsD19t6sFf5RUlR7alw6ztacjNU5tDbYsQcxuOKbA/640?tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+**Region**是HBase中负载均衡的基本单元，当一个Region增长到一定大小以后，会自动分裂成两个。
+
+#### Column Family
+
+**纵向切割**
+![](https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6AvECce69uqxAGjO2tFu95JZzZNC0tZEsNgKY8x3Wt5x0AdHmSIjacvxBQX8DEkJBfjREUibibqdic2w/640?tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+
+### KeyValue
+
+
+KeyValue的设计不是源自Bigtable，而是要追溯至论文"The log-structured merge-tree(LSM-Tree)"。每一行中的每一列数据，都被包装成独立的拥有特定结构的KeyValue，KeyValue中包含了丰富的自我描述信息:
+![](https://mmbiz.qpic.cn/mmbiz_png/licvxR9ib9M6AvECce69uqxAGjO2tFu95JSNy7zECmCYtYYPSoj1ZPK7tVDHVia5mRKDyEj2eTUfuP3U8iar5u6HZw/640?tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
+看的出来，KeyValue是支撑"稀疏矩阵"设计的一个关键点：一些Key相同的任意数量的独立KeyValue就可以构成一行数据。但这种设计带来的一个显而易见的缺点：**每一个KeyValue所携带的自我描述信息，会带来显著的数据膨胀。**
 # 算法
 
 ## 排序算法
@@ -1932,52 +2326,52 @@ keepalive 我需要过 两个这个相关的问题。
 
 # 分布式系统
 
-## Spring Cloud
+# Spring Cloud
 Spring Cloud 是规范 实现 有  Spring Cloud NetFlix and Spring Cloud Alibaba
 ![WX20190315-164937@2x](https://i.imgur.com/XQxLikC.png)
 ![1123](https://i.imgur.com/G2MpfMe.png)
-### 注册中心  服务注册和发现
+## 注册中心  服务注册和发现
 
 Nacos Discovery、Spring Cloud Netflix Eureka、ZooKeeper 和 Consul （原生）
 
-### 服务消费者
+## 服务消费者
 rest （restTemplate）+ribbon 负载均衡 feign
-### 配置中心 
+## 配置中心 
 Nacos Config 和 Spring Cloud Config  Apollo
-### 断路器
+## 断路器
 Hystrix  Sentinel
-### 网关
+## 网关
 服务网关是微服务架构中一个不可或缺的部分。通过服务网关统一向外系统提供REST API的过程中，除了具备服务路由、均衡负载功能之外，它还具备了权限控制等功能
 Zuul  Spring Cloud GateWay（原生）
 
-## 分布式锁
-## ID生成器
+# 分布式锁
+# ID生成器
 **特性**
 * 唯一性：确保生成的ID是全网唯一的。
 * 有序递增性：确保生成的ID是对于某个用户或者业务是按一定的数字有序递增的。
 * 高可用性：确保任何时候都能正确的生成ID。
 * 带时间：ID里面包含时间，一眼扫过去就知道哪天的交易。
 
-### 系统时间戳
+## 系统时间戳
 毫秒数+业务属性+用户属性+随机数+...等参数组合形式来确保ID的唯一性， 缺点是ID的有序性难以保证
 
-### UUID
+## UUID
 缺点是它不包含时间、业务数据可读性太差了，而且也不能ID的有序递增。
 
-### 数据库自增ID
+## 数据库自增ID
 这个方案很简单，但最主要的问题在于依赖数据库本身，这就无形增加了对数据库的访问压力和依赖，一旦对单库进行分库分表或者数据迁移就尴尬了。
 
-### 批量生成ID
+## 批量生成ID
 一次按需批量生成多个ID，每次生成都需要访问数据库，将数据库修改为最大的ID值，并在内存中记录当前值及最大值。
 * 优点：避免了每次生成ID都要访问数据库并带来压力，提高性能
 * 缺点：属于本地生成策略，存在单点故障，服务重启造成ID不连续
 
-###  Redis生成ID
+##  Redis生成ID
 Redis的所有命令操作都是单线程的，本身提供像 incr 和 increby 这样的自增原子命令，所以能保证生成的 ID 肯定是唯一有序的。
 * 优点：不依赖于数据库，灵活方便，且性能优于数据库；数字ID天然排序，对分页或者需要排序的结果很有帮助。
 * 缺点：如果系统中没有Redis，还需要引入新的组件，增加系统复杂度；需要编码和配置的工作量比较大。
 
-### Twitter的snowflake算法
+## Twitter的snowflake算法
 ![v2-ebae02708fffe6e24fbb3780e0ffab96_hd](https://i.imgur.com/VJxvP5l.jpg)
 
 * 41位的时间序列，精确到毫秒，可以使用69年
@@ -1986,21 +2380,21 @@ Redis的所有命令操作都是单线程的，本身提供像 incr 和 increby 
 
 这种方案性能好，在单机上是递增的，但是由于涉及到分布式环境，每台机器上的时钟不可能完全同步，也许有时候也会出现不是全局递增的情况。
 
-### UidGenerator
+## UidGenerator
 UidGenerator是百度开源的分布式ID生成器，基于于snowflake算法的实现
 
-### Leaf
+## Leaf
 
 Leaf是美团开源的分布式ID生成器，能保证全局唯一性、趋势递增、单调递增、信息安全，里面也提到了几种分布式方案的对比，但也需要依赖关系数据库、Zookeeper等中间件。
 
-## 读写分离 分库分表
-## 分布式事务
+# 读写分离 分库分表
+# 分布式事务
 
 例如做一个服务，最初底下只有一个数据库，用数据库本身的事务来保证数据一致性。随着数据量增长到一定规模，进行了分库，这时数据库的事务就不管用了，如何保证多个库之间的数据一致性呢？
 
 ?> **7种解决方案**
 
-### 2PC
+## 2PC
 2PC有两个角色：事务协调者和事务参与者。具体到数据库的实现来说，每一个数据库就是一个参与者，调用方也就是协调者。2PC是指事务的提交分为两个阶段，如图10-1所示。
 * 阶段1：准备阶段。协调者向各个参与者发起询问，说要执行一个事务，各参与者可能回复YES、NO或超时。
 * 阶段2：提交阶段。如果所有参与者都回复的是YES，则事务协调者向所有参与者发起事务提交操作，即Commit操作，所有参与者各自执行事务，然后发送ACK。
@@ -2011,7 +2405,7 @@ Leaf是美团开源的分布式ID生成器，能保证全局唯一性、趋势�
 
 !> 2PC除本身的算法局限外，还有一个使用上的限制，就是它主要用在两个数据库之间（数据库实现了XA协议）。但以支付宝的转账为例，是两个系统之间的转账，而不是底层两个数据库之间直接交互，所以没有办法使用2PC。
 
-### 最终一致性(消息中间件)
+## 最终一致性(消息中间件)
 
 !> 实现了消息在发送方的不丢失、在接收方的不重复，联合起来就是消息的不漏不重，严格实现了系统A和系统B的最终一致性。
 * 业务方直接实现 +kafaka
@@ -2020,7 +2414,7 @@ Leaf是美团开源的分布式ID生成器，能保证全局唯一性、趋势�
 ![WX20190401-173451@2x](https://i.loli.net/2019/04/01/5ca1db48c729f.png)
 * 人工介入
 
-### TCC
+## TCC
 为了解决SOA系统中的分布式事务问题，支付宝提出了TCC。TCC是Try、Confirm、Cancel三个单词的缩写，其实是一个应用层面的2PC协议，Confirm对应2PC中的事务提交操作，Cancel对应2PC中的事务回滚操作，如图10-6所示。
 
 *（1）准备阶段：调用方调用所有服务方提供的Try接口，该阶段各调用方做资源检查和资源锁定，为接下来的阶段2做准备。
@@ -2028,14 +2422,14 @@ Leaf是美团开源的分布式ID生成器，能保证全局唯一性、趋势�
 *（2）提交阶段：如果所有服务方都返回YES，则进入提交阶段，调用方调用各服务方的Confirm接口，各服务方进行事务提交。如果有一个服务方在阶段1返回NO或者超时了，则调用方调用各服务方的Cancel接口，如图10-7所示。
 
 ![WX20190401-173639@2x](https://i.loli.net/2019/04/01/5ca1dbb7840ba.png)
-### 事务状态表+调用方重试+接收方幂等
+## 事务状态表+调用方重试+接收方幂等
 
-### 对账
-### 妥协方案：弱一致性+基于状态的补偿
-### 重试+回滚+报警+人工修复
+## 对账
+## 妥协方案：弱一致性+基于状态的补偿
+## 重试+回滚+报警+人工修复
 
-## 分布式日志系统
-### 概述
+# 分布式日志系统
+## 概述
 
 ELK 已经成为目前最流行的集中式日志解决方案，它主要是由Beats、Logstash、Elasticsearch、Kibana等组件组成，来共同完成实时日志的收集，存储，展示等一站式的解决方案。本文将会介绍ELK常见的架构以及相关问题解决。
 
@@ -2044,7 +2438,7 @@ ELK 已经成为目前最流行的集中式日志解决方案，它主要是由B
 `Elasticsearch`：分布式数据搜索引擎，基于Apache Lucene实现，可集群，提供数据的集中式存储，分析，以及强大的数据搜索和聚合功能。
 `Kibana`：数据的可视化平台，通过该web平台可以实时的查看 Elasticsearch 中的相关数据，并提供了丰富的图表统计功能。
 
-### 常见架构
+## 常见架构
 
 * Logstash作为日志收集器
 
@@ -2695,14 +3089,17 @@ Apollo配置中心应运而生！
     * 服务端使用Spring DeferredResult实现**异步化**，从而大大增加长连接数量
     * 目前使用的tomcat embed默认配置是最多10000个连接（可以调整），使用了4C8G的虚拟机实测可以支撑10000个连接，所以满足需求（一个应用实例只会发起一个**长连接**）。
 * 接口服务对象为Apollo客户端
+
 #### Admin Service
 * 提供配置管理接口
 * 提供配置修改、发布等接口
 * 接口服务对象为Portal
+
 #### Meta Server
 * Meta Server从Eureka获取Config Service和Admin Service的服务信息，相当于是一个Eureka Client
 * 增设一个Meta Server的角色主要是为了封装服务发现的细节，对Portal和Client而言，永远通过一个Http接口获取Admin Service和Config Service的服务信息，而不需要关心背后实际的服务注册和发现组件
 * Meta Server只是一个逻辑角色，在部署时和Config Service是在一个JVM进程中的，所以IP、端口和Config Service一致
+
 #### Eureka
 * Config Service和Admin Service会向Eureka注册服务，并保持心跳
 * 为了简单起见，目前Eureka在部署时和Config Service是在一个JVM进程中的（通过Spring Cloud Netflix）
@@ -2712,10 +3109,12 @@ Apollo配置中心应运而生！
 * 完整的Service Registry和Service Discovery实现 经过了Netflix生产环境的考验
 * 和SpringCloud 无缝集成。 Eureka还支持在我们应用自身的容器中启动，也就是说我们的应用启动完之后，既充当了Eureka的角色，同时也是服务的提供者。这样就极大的提高了服务的可用性。 减少外部依赖
 * 开源
+
 #### Portal
 * 提供Web界面供用户管理配置
 * 通过Meta Server获取Admin Service服务列表（IP+Port），通过IP+Port访问服务
 * 在Portal侧做load balance、错误重试
+
 #### Client
 
 * Apollo提供的客户端程序，为应用提供配置获取、实时更新等功能
@@ -2725,11 +3124,12 @@ Apollo配置中心应运而生！
 ### 服务端设计
 #### 配置发布后的实时推送设计
 ![](https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/release-message-notification-design.png) 
-![](https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/release-message-design.png)
-**ReleaseMessage**
-没有引入mq 采用的扫描机制
-### 客户端设计
+![](https://raw.githubusercontent.com/ctripcorp/apollo/master/doc/images/release-message-design.png ':size=500')
 
+**ReleaseMessage**
+没有引入mq，采用的线程每秒定时扫描机制
+
+### 客户端设计
 ![](https://github.com/ctripcorp/apollo/raw/master/doc/images/client-architecture.png)
 上图简要描述了Apollo客户端的实现原理：
 1. 客户端和服务端保持了一个长连接，从而能第一时间获得配置更新的推送。
