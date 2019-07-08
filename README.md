@@ -661,8 +661,8 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
 
 这6种状态定义在Thread类的State枚举中，可查看源码进行一一对应。
 * 线程状态图
+![20181120173640764](/assets/20181120173640764.jpeg)
 
-![](https://img-blog.csdnimg.cn/20181120173640764.jpeg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3BhbmdlMTk5MQ==,size_16,color_FFFFFF,t_70)
 
 >
     1. 初始状态
@@ -742,7 +742,7 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
 * 当方法wait()被执行后，锁自动被释放，但执行完notify()方法后，锁不会自动释放。必须执行完notify()方法所在的synchronized代码块后才释放。
 ## 等待队列 与同步队列
 
-![](https://img-blog.csdn.net/20180701221233161?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3BhbmdlMTk5MQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
+![20180701221233161](/assets/20180701221233161.jpeg)
 
 同步队列里面放的都是想争夺对象锁的线程。
 等待队列： 释放锁之后进入等待队列
@@ -772,7 +772,7 @@ o.notifyAll() 将所有的等待队列中的线程 移入同步队列  竞争获
 
 !> 由于ThreadLocalMap的生命周期跟Thread一样长，如果没有手动删除对应key就会导致内存泄漏，而不是因为弱引用。
 
-![](https://user-gold-cdn.xitu.io/2018/4/3/162896ab1a1d1e2e?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![162896ab1a1d1e2](/assets/162896ab1a1d1e2e)
 
 * **线程安全性问题存在于实例变量。 访问同一实例的变量 可能会产生线程安全问题**
 
@@ -884,13 +884,13 @@ AQS使用一个int类型的成员变量`state`来表示同步状态，当state>0
 
 CLH同步队列是一个FIFO双向队列，AQS依赖它来完成同步状态的管理，**当前线程如果获取同步状态失败时，AQS则会将当前线程已经等待状态等信息构造成一个节点（Node）并将其加入到CLH同步队列**，同时会阻塞当前线程，当同步状态释放时，会把首节点唤醒（公平锁），使其再次尝试获取同步状态。
 
-![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1dc31c5?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![162fba60e1dc31c](/assets/162fba60e1dc31c5)
 
 **入列**
-![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1eb4e4a?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![a](/assets/a2)
 tail指向新节点、新节点的prev指向当前最后的节点，当前最后一个节点的next指向当前节点
 **出列**
-![](https://user-gold-cdn.xitu.io/2018/4/25/162fba60e1f51346?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![a](/assets/a3)
 CLH同步队列遵循FIFO，首节点的线程释放同步状态后，将会唤醒它的后继节点（next），而后继节点将会在获取同步状态成功时将自己设置为首节点，这个过程非常简单，**head指向该节点并断开原首节点的next和当前节点的prev即可**，注意在这个过程是不需要使用CAS来保证的，因为只有一个线程能够成功获取到同步状态。
 ## 并发工具类 
 * Semaphore(信号量)-允许多个线程同时访问 
@@ -1478,7 +1478,7 @@ FROM table_name
 
 ## 索引
 * 数据结构 b+树的索引结构解释
-![](https://user-gold-cdn.xitu.io/2018/1/26/16133167da9306bb?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![b](/assets/b1)
 浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。**真实的数据存在于叶子节点**即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中。
 
 mysql索引主要是是B+树实现，B+树是2-3树的一种实现，是多叉树，数据都存在叶子节点上，叶子节点之间指针相连，用b树主要是因为大文件无法全部加载到内存，
@@ -1506,8 +1506,7 @@ MyISAM更适合读密集的表，而InnoDB更适合写密集的的表 MyISAM只�
     * 知道索引的分类：聚集索引和非聚集索引
     * Mysql支持Hash索引和B+树索引两种
 * 没有用索引我们是需要遍历双向链表来定位对应的页，现在通过**“目录”**就可以很快地定位到对应的页上了！其实底层结构就是B+树，B+树作为树的一种实现，能够让我们很快地查找出对应的记录。
-![](https://user-gold-cdn.xitu.io/2018/7/23/164c6d7a5663f62b?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
-
+![sddd](/assets/sddd.png)
 !> **索引最左匹配原则**
 
 * 索引可以简单如一个列(a)，也可以复杂如多个列(a, b, c, d)，即联合索引。
@@ -1566,7 +1565,7 @@ id|name	|create_version|delete_version
 1|Jerry|2
 
 ## 锁
-![](https://user-gold-cdn.xitu.io/2018/7/23/164c6d7ae44d8ac6?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+![vd](/assets/vdv)
 
 **表锁**
 开销小，加锁快；不会出现死锁；锁定力度大，发生锁冲突概率高，并发度最低
@@ -1588,7 +1587,6 @@ id|name	|create_version|delete_version
 ## 切分
 * 水平切分
 
-![](https://github.com/CyC2018/CS-Notes/raw/master/docs/notes/pics/63c2909f-0c5f-496f-9fe5-ee9176b31aba.jpg)
 水平拆分能够 支持非常大的数据量存储，应用端改造也少，但 分片事务难以解决 ，跨界点Join性能较差，逻辑复杂。《Java工程师修炼之道》的作者推荐 尽量不要对数据进行分片，因为拆分会带来逻辑、部署、运维的各种复杂度 ，一般的数据表在优化得当的情况下支撑千万以下的数据量是没有太大问题的。如果实在要分片，尽量选择客户端分片架构，这样可以减少一次和中间件的网络I/O。
 * Sharding 策略
     * 哈希取模：hash(key) % N；
@@ -1608,7 +1606,7 @@ id|name	|create_version|delete_version
 * 垂直切分
 
 垂直切分是将一张表按列切分成多个表，通常是按照列的关系密集程度进行切分，也可以利用垂直切分将经常被使用的列和不经常被使用的列切分到不同的表中
-![](https://github.com/CyC2018/CS-Notes/raw/master/docs/notes/pics/e130e5b8-b19a-4f1e-b860-223040525cf6.jpg)
+
 
 * 主从复制 读写分离  云服务提供的能力
 
@@ -2514,7 +2512,8 @@ if (res) {
 !> 利用节点名称的唯一性来实现独占锁
 
 ZooKeeper机制规定同一个目录下只能有一个唯一的文件名，zookeeper上的一个znode看作是一把锁，通过createznode的方式来实现。所有客户端都去创建/lock/${lock_name}_lock节点，最终成功创建的那个客户端也即拥有了这把锁，创建失败的可以选择监听继续等待，还是放弃抛出异常实现独占锁。
-![](https://user-gold-cdn.xitu.io/2018/10/15/16676ef2917db3f2?imageView2/0/w/1280/h/960/format/webp/ignore-error/1)
+
+![12321](/assets/123213)
 
 ## 基于数据库
 
@@ -2687,12 +2686,13 @@ ActiveMQ，RabbitMQ，RocketMQ，Kafka
 ### 消息队列的应用场景
 * 应用解耦
 
-![](http://images2015.cnblogs.com/blog/270324/201607/270324-20160730143228325-953675504.png)     
+![270324-20160730143228325-953675504](/assets/270324-20160730143228325-953675504.png)
+
 假如：在下单时库存系统不能正常使用。也不影响正常下单，因为下单后，订单系统写入消息队列就不再关心其他的后续操作了。实现订单系统与库存系统的应用解耦
 
 * 异步处理
 
-![](http://images2015.cnblogs.com/blog/270324/201607/270324-20160730141236169-1140938329.png)
+![te](/assets/te.png)
 
 * 流量削峰 xue
 
@@ -2701,8 +2701,7 @@ ActiveMQ，RabbitMQ，RocketMQ，Kafka
 a、可以控制活动的人数
 b、可以缓解短时间内高流量压垮应用
 
-![](http://images2015.cnblogs.com/blog/270324/201607/270324-20160730151710106-2043115158.png)
-
+![aa1](/assets/aa1.png)
 用户的请求，服务器接收后，首先写入消息队列。假如消息队列长度超过最大数量，则直接抛弃用户请求或跳转到错误页面。
 秒杀业务根据消息队列中的请求信息，再做后续处理
 
