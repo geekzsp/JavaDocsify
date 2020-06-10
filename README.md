@@ -72,6 +72,7 @@ C++可以直接使用指针操作内存。响应的也比较晦涩难懂。 Java
      String aa = "ab"; // 放在常量池中
      String bb = "ab"; // 从常量池中查找```
      a!=b  aa==bb    a b  aa bb equals 都相等
+    ```
 * hashCode 和equals
     * hashCode  哈希 散列  目的是为了 快速查找 确定对象位置。
     * hashCode 来检查 重复  向hashSet 里面添加元素 先比较 hashcode  hashcode 一样 在进行equals  (减少equals 次数 来)
@@ -137,7 +138,97 @@ Integer a=NUll;
 int b=a  //自动拆箱 NPE       a.vauleof()
 ```
 
+**Integer和int**
+
+```Java
+Integer a = 3;
+//等同于
+Integer a= Integer.valueOf(3);
+```
+
+Integer源码
+
+```java
+        static final int low = -128;
+        static final int high;
+        static final Integer cache[];
+
+        static {
+            // high value may be configured by property
+            int h = 127;
+            String integerCacheHighPropValue =
+                sun.misc.VM.getSavedProperty("java.lang.Integer.IntegerCache.high");
+            if (integerCacheHighPropValue != null) {
+                try {
+                    int i = parseInt(integerCacheHighPropValue);
+                    i = Math.max(i, 127);
+                    // Maximum array size is Integer.MAX_VALUE
+                    h = Math.min(i, Integer.MAX_VALUE - (-low) -1);
+                } catch( NumberFormatException nfe) {
+                    // If the property cannot be parsed into an int, ignore it.
+                }
+            }
+            high = h;    
+		public static Integer valueOf(int i) {
+        if (i >= IntegerCache.low && i <= IntegerCache.high)
+            return IntegerCache.cache[i + (-IntegerCache.low)];
+        return new Integer(i);
+    }
+          
+    public boolean equals(Object obj) {
+        if (obj instanceof Integer) {
+            return value == ((Integer)obj).intValue();
+        }
+        return false;
+    }
+```
+
+Integer默认会缓存`-127~128`范围的数字。 最大值也可以通过JVM数`java.lang.Integer.IntegerCache.high`设置。
+
+```java
+        int a=1;
+        int b=3;
+        System.out.println(a==b);
+				//报错
+        System.out.println(a.equals(b));
+```
+
+* int 和 int 比较   只能使用`==`
+
+  
+
+```java
+        Integer a = 123;
+        Integer b = 123;
+        System.out.println(a==b);
+        System.out.println(a.equals(b));
+```
+
+* 包装类型 使用 `==` 比较  如果值在-128和127之间，结果为true，否则为false
+* 两个包装类在进行`equals`比较时，首先会用`equals`方法判断其类型，如果类型相同，再继续比较值，如果值也相同，则结果为true
+
+
+
+
+
+```java
+        Integer a = 123;
+        int b = 23;
+        System.out.println(a.equals(b));
+        System.out.println(a==b);
+```
+
+* Integer 和 int 比较时候。使用`equals` int 会自动装箱
+* 使用`==` integer 会自动拆箱
+
+
+
+> 对于比较相关问题。 一般只有引用类型 `==` 会产生疑问。 对于引用类型 `==`或者没有重写`equals`方法时  比较的都是 对象的地址。 因为Integer 或者String 有缓存机制。 所以== 在缓存范围内会相等。对于`new`一个对象。地址就不一样了。
+
+
+
 ## String StringBuilder StringBuffer
+
 * String StringBuilder  StringBuffer
     1. 可变性。    
     String类是使用 final关键词的字符数据来保存字符串 private  final char[]  其他两个都是继承AbstractStringBuilder 里面不带final的
@@ -172,7 +263,16 @@ System.out.println(str1==str2);//false
 
 String 提供的 intern 方法。`String.intern()` 是一个 Native 方法，它的作用是：如果运行时常量池中已经包含一个等于此 String 对象内容的字符串，则返回常量池中该字符串的引用；如果没有，则在常量池中创建与此 String 内容相同的字符串，并返回常量池中创建的字符串的引用。
 
+## 类变量
+
+![](https://tva1.sinaimg.cn/large/007S8ZIlly1gfm60t2vlzj30wc0u00xl.jpg)
+
+
+
+
+
 ## 接口 抽象类
+
 * 接口和抽象类有什么区别
     * 相同的：都不能被实例化
     * 不同点：
@@ -410,17 +510,18 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
     2. 解析这个二进制数据流为方法区内的数据结构
     3. 创建一个表示该类型的java.lang.Class类的实例，作为方法区这个类的各种数据的访问入口。
     * 验证
-    为了确保Class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。
+      为了确保Class文件的字节流中包含的信息符合当前虚拟机的要求，并且不会危害虚拟机自身的安全。
     * 准备
-    准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些变量所使用的内存都将在方法区中进行分配。（备注：这时候进行内存分配的仅包括类变量（被static修饰的变量），而不包括实例变量，实例变量将会在对象实例化时随着对象一起分配在Java堆中）。
-    初始值通常是数据类型的零值：
+      准备阶段是正式为类变量分配内存并设置类变量初始值的阶段，这些变量所使用的内存都将在方法区中进行分配。（备注：这时候进行内存分配的仅包括类变量（被static修饰的变量），而不包括实例变量，实例变量将会在对象实例化时随着对象一起分配在Java堆中）。
+      初始值通常是数据类型的零值：
          > 对于：public static int value = 123;，那么变量value在准备阶段过后的初始值为0而不是123，这时候尚未开始执行任何java方法，把value赋值为123的动作将在初始化阶段才会被执行。
-    一些特殊情况：
-    对于：public static final int value = 123;编译时Javac将会为value生成ConstantValue属性，在准备阶段虚拟机就会根据ConstantValue的设置将value赋值为123。
+      一些特殊情况：
+      对于：public static final int value = 123;编译时Javac将会为value生成ConstantValue属性，在准备阶段虚拟机就会根据ConstantValue的设置将value赋值为123。
     * 解析
-    解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。
+      解析阶段是虚拟机将常量池内的符号引用替换为直接引用的过程。
     * 初始化
-    到了初始化阶段，才真正开始执行类中定义的java程序代码（或者说是字节码）。
+      到了初始化阶段，才真正开始执行类中定义的java程序代码（或者说是字节码）。
+  
 * 类初始化 
     虚拟机规范严格规定了有且只有五种情况必须立即对类进行“初始化”：
     * 使用new关键字实例化对象的时候、读取或设置一个类的静态字段的时候，已经调用一个类的静态方法的时候。
@@ -437,10 +538,49 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
     **其他情况不会进行初始化**        
     ①通过子类引用父类静态字段，不会导致子类初始化； 
 
+    ```java
+public class P {
+    public static int abc = 123;
+static{
+    System.out.println("P is init");
+    }
+    }
+    public class S extends P {
+    static{
+    System.out.println("S is init");
+    }
+    }
+    public class Test {
+    public static void main(String[] args) {
+    System.out.println(S.abc);
+    }
+    }
+    //输出结果 P is init
+    ```
+    
+    ```java
+    public class P {
+    public static int abc = 123;
+    static{
+    System.out.println("P is init");
+    }
+    }
+    public class S extends P {
+    static{
+    System.out.println("S is init");
+    }
+      public static void main(String[] args) {
+    System.out.println(S.abc);
+    }
+    }
+    
+    //输出结果 P is init <br>  S is init
+    ```
+    
     ②通过数组定义引用类，不会触发此类的初始化                       
-
+    
     ③常量在编译阶段会存入调用类的常量池中，本质上并没有直接引用定义常量的类，因此不会触发定义常量的类的初始化        
-
+    
 * 类初始化的加载顺序。         
     (1) 父类静态代码块(包括静态初始化块，静态属性，但不包括静态方法)        
     (2) 子类静态代码块(包括静态初始化块，静态属性，但不包括静态方法 )           
@@ -448,6 +588,7 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
     (4) 父类构造函数         
     (5) 子类非静态代码块 ( 包括非静态初始化块，非静态属性 )       
     (6) 子类构造函数       
+    
 * 对象的创建
 
     ①类加载检查：检查这个符号引用代表的类是否已被加载过、解析和初始化过
@@ -462,6 +603,7 @@ GI 将 Java 堆空间分割成了若干相同大小的 区域， G1 采用的Mar
 
 * 类与类加载器
   对于任意一个类，都需要由加载它的类加载器和这个类本身一同确立其在Java虚拟机中的唯一性。**如果两个类来源于同一个Class文件，只要加载它们的类加载器不同，那么这两个类就必定不相等。**
+  
 * 类加载器分类
   * 启动类加载器（Bootstrap）
   C++实现 是虚拟机的一部分 加载 <Java_Runtime_Home>\lib目录中的，或者被-Xbootclasspath参数所指定的路径
@@ -666,7 +808,8 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
 
 >
     1. 初始状态
-    实现Runnable接口和继承Thread可以得到一个线程类，new一个实例出来，线程就进入了初始状态。
+  
+      实现Runnable接口和继承Thread可以得到一个线程类，new一个实例出来，线程就进入了初始状态。
 
     2.1. 就绪状态
     就绪状态只是说你资格运行，调度程序没有挑选到你，你就永远是就绪状态。
@@ -676,16 +819,16 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
     锁池里的线程拿到对象锁后，进入就绪状态。
     2.2. 运行中状态
     线程调度程序从可运行池中选择一个线程作为当前线程时线程所处的状态。这也是线程进入运行状态的唯一一种方式。
-
+    
     3. 阻塞状态
     阻塞状态是线程等待进入synchronized关键字修饰的方法或代码块(获取锁)时的状态。
-
+    
     4. 等待
     处于这种状态的线程不会被分配CPU执行时间，它们要等待被显式地唤醒，否则会处于无限期等待的状态。
-
+    
     5. 超时等待
     处于这种状态的线程不会被分配CPU执行时间，不过无须无限期等待被其他线程显示地唤醒，在达到一定时间后它们会自动唤醒。
-
+    
     6. 终止状态
     当线程的run()方法完成时，或者主线程的main()方法完成时，我们就认为它终止了。这个线程对象也许是活的，但是，它已经不是一个单独执行的线程。线程一旦终止了，就不能复生。
     在一个终止的线程上调用start()方法，会抛出java.lang.IllegalThreadStateException异常。
@@ -720,7 +863,7 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
 
 ![WX20190308-1031124@2x](https://i.imgur.com/VZwjHqT.png)
 ![WX20190308-103124@2x](https://i.imgur.com/AHjUMY7.png)
-   
+
     wait()  使调用该方法的线程释放共享资源锁，然后从运行状态退出，进入等待队列。知道被再次唤醒
     notify() 随机唤醒等待队列中等待统一共享资源的“一个线程”，并使该线程退出等待队列，进入可运行状态。也就是notify()方法仅通知“一个线程”
 * 通知等待的经典范式 
@@ -738,7 +881,7 @@ preDefineClass 不允许java开头的包名被defineClass方法构造
      改变条件
      对象.notifyAll();
     }
-     ```
+    ```
 * 当方法wait()被执行后，锁自动被释放，但执行完notify()方法后，锁不会自动释放。必须执行完notify()方法所在的synchronized代码块后才释放。
 ## 等待队列 与同步队列
 
@@ -794,7 +937,8 @@ o.notifyAll() 将所有的等待队列中的线程 移入同步队列  竞争获
 但是同步不能继承，所以还是需要在子类方法中添加synchronized关键字。
 synchronized关键字加到static静态方法和synchronized(class)代码块上都是是给Class类上锁，而synchronized关键字加到非static静态方法上是给对象上锁。
 * volatile 和synchronized 关键字的区别
-   
+  
+
 volatile 用于变量  synchronized修饰方法和代码块
 多线程访问volatile不会阻塞 synchronized 可能会发生阻塞
 volatile保证的数据的可见性不能保证数据的原子性。 synchronized两者都可以保证
@@ -924,7 +1068,7 @@ public class SemaphoreTest {
 
 ②实现多个线程开始执行任务的最大并行性。注意是并行性，不是并发，强调的是多个线程在某一时刻同时开始执行。类似于赛跑，将多个线程放到起点，等待发令枪响，然后同时开跑。做法是初始化一个共享的 `CountDownLatch` 对象，将其计数器初始化为 1 ：`new CountDownLatch(1) `，多个线程在开始执行任务前首先 `coundownlatch.await()`，当主线程调用 countDown() 时，计数器变为0，多个线程同时被唤醒。
     
-  
+
 ③死锁检测：一个非常方便的使用场景是，你可以使用n个线程访问共享资源，在每次测试阶段的线程数目是不同的，并尝试产生死锁。
 *  CyclicBarrier(循环栅栏)
 
@@ -2202,14 +2346,14 @@ public static int[] selectionSort(int[] array) {
         return instance;                                 // 10
     }                                                    // 11
     }
-    ```    
+    ```
     instance=new Singleton();
         可以拆分为3步
 
         memory=allocate();//1.分配内存空间
         cotrInstance(memory);//2.初始化对象
         instance=memory;//3. 设置instance指向刚分配的内存地址
-
+        
         2 3 可能会被重排序
      “双重检查锁定看起来似乎很完美，但这是一个错误的优化！在线程执行到第4行，代码读取到instance不为null时，instance引用的对象有可能还没有完成初始化。”
    
@@ -2240,17 +2384,17 @@ ipv4 实际上一个32个位的二进制数。 4个字节。 通常用点分10�
 * TCP/IP 协议分层框架
 ![WX20190319-144015@2x](https://i.imgur.com/WZzWGeK.png)
     * 应用层
-    HTTP、FTP、SMTP
+      HTTP、FTP、SMTP
     * 传输层
-    最典型的传输层协议是 UDP 和 TCP。 UDP 只是在 IP 数据包上增加端口等部分 信息 ， 是**面向无连接**的，是不可靠传输，多用于视频通信、电话会议等(即 使少一帧数据也无妨)。与之相反 ， **TCP 是面向连接的。所谓面向连接** ， 是 一种端到端间通过失败重传机制建立的可靠数据传输方式，给人感觉是有一 条固定的通路承载着数据的可靠传输。
+      最典型的传输层协议是 UDP 和 TCP。 UDP 只是在 IP 数据包上增加端口等部分 信息 ， 是**面向无连接**的，是不可靠传输，多用于视频通信、电话会议等(即 使少一帧数据也无妨)。与之相反 ， **TCP 是面向连接的。所谓面向连接** ， 是 一种端到端间通过失败重传机制建立的可靠数据传输方式，给人感觉是有一 条固定的通路承载着数据的可靠传输。
     * 网络层
-    IP数据包 TTL  IP寻址  ` ICMP`  MTU最大传输单元
+      IP数据包 TTL  IP寻址  ` ICMP`  MTU最大传输单元
          * IP等级  IP位置  
-        Class A 10.0.0.0-10.255.255.255  
-        Class B 172.16.0.0-172.31.255.255  
-        Class C 192.168.0.0-192.168.255.255
+          Class A 10.0.0.0-10.255.255.255  
+          Class B 172.16.0.0-172.31.255.255  
+          Class C 192.168.0.0-192.168.255.255
     * 链路层
-    MAC地址
+      MAC地址
 
 总结一下 ， 程序在发送消息时，应用层接既定的协议打包数据 ， 随后由传输层加 上双方的端口 号 ，由网络层加上双方的 IP 地址，由链路层加上双方的 MAC 地址 ， 并 将数据拆分成数据帧 ， 经过多个路由器 和 网关后 ， 至lj达目标机器。简而言之 ， 就是按
 **“端口→ IP 地址→ MAC 地址 ”** 这样的路径进行数据的封装和发送 ， 解包的时候反过 来操作即可。
@@ -2370,7 +2514,7 @@ response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.en
 
 ```
 * http 长连接
- 
+
 Connection：请求：close（告诉WEB服务器或者代理服务器，在完成本次请求的响应后，断开连接，不要等待本次连接的后续请求了）。
  keepalive（告诉WEB服务器或者代理服务器，在完成本次请求的响应后，保持连接，等待本次连接的后续请求）。 
  响应：close（连接已经关闭）。 
@@ -2764,7 +2908,7 @@ RocketMQ是阿里开源的消息中间件，它是纯Java开发，具有高吞�
 
 **消息消费模式** 
 消息消费模式有两种：集群消费（Clustering）和广播消费（Broadcasting）。默认情况下就是集群消费，该模式下一个消费者集群共同消费一个主题的多个队列，一个队列只会被一个消费者消费，如果某个消费者挂掉，分组内其它消费者会接替挂掉的消费者继续消费。而广播消费消息会发给消费者组中的每一个消费者进行消费。
- 
+
 ### Kafka
 **吞吐量高 一般用在大数据日志处理或对实时性（少量延迟）、可靠性(少量丢数据)要求比较低的场景**
 
