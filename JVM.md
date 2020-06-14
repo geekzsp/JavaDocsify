@@ -2,15 +2,17 @@
 
 ## 内存结构
 * JVM内存模型
-![WX20190408-221810@2x](https://i.imgur.com/JWITtXb.png)
-* JDK8 Hotshot实现的
-![WX20190312-114256@2x](https://i.imgur.com/QQCJpyg.png)
+  ![image-20200613120835063](assets/image-20200613120835063.png)
 
-> 方法区的实现 jdk8之前 是持久代 放到堆中  但是容易引发OOM 后来引入元数据
-> 虚拟机栈
-> 堆 heap     新生代（Eden so s1） 老年代  字符串常量   Eden放不下 YGC   old放不下  YGC          Survivor
-> 元数据  常量池 类元数据  方法元数据 字段 静态属性 方法 常量   方法区  -perm -元数据
-> 本地方法栈 native 程序计数器
+* JDK8 Hotshot实现的
+
+  ![image-20200613120904779](assets/image-20200613120904779.png)
+
+  方法区的实现 jdk8之前 是持久代 放到堆中  但是容易引发OOM 后来引入元数据
+  虚拟机栈
+  堆 heap     新生代（Eden so s1） 老年代  字符串常量   Eden放不下 YGC   old放不下  YGC          Survivor
+  元数据  常量池 类元数据  方法元数据 字段 静态属性 方法 常量   方法区  -perm -元数据
+  本地方法栈 native 程序计数器
 
 1. Heap(堆区)
 
