@@ -671,6 +671,16 @@ static final int tableSizeFor(int cap) {
 - HashMap 的迭代器是 fail-fast 迭代器。
 - HashMap 不能保证随着时间的推移 Map 中的元素次序是不变的。
 
+## 大白话
+
+hash 优化       key的hash值异或 key的hash右移16位。 目的 让高16位和低16位都参与运算 及低16位包含了 高低16位的所有特征。进而减少hash冲突
+
+寻址： hash%数组长度（16）  优化（n-1）&hash   结果位运算效率更高
+
+hash冲突 之后 进行拉链。
+
+扩容： （n-1）&hash    重新计算位置  没有变动的还是放在原处 变动的 进行移动。
+
 ## ConcurrentHashMap
 
 ![img](assets/image-20191209001038024.png)

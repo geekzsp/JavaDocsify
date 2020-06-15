@@ -1,5 +1,4 @@
 * [rep](rep.md)
-
 * 备战面试
 
   * [CS-Notes](https://cyc2018.github.io/CS-Notes/#/)
@@ -11,7 +10,7 @@
   * [Interview](https://hadyang.github.io/interview/)
   * [JavaInterview](https://github.com/OUYANGSIHAI/JavaInterview)
   * [反问面试官的话](https://github.com/yifeikong/reverse-interview-zh)
-
+  * [面试技巧](面试技巧.md)
 * Java
 
   * Java基础
@@ -20,34 +19,39 @@
     * [内部类](内部类.md)
   * [JVM](JVM.md)
   * [并发](并发.md)
-
-* Spring
-
-* Mybatis
-
+* [Spring](Spring.md)
+* [Mybatis](Mybatis.md)
 * [计算机网络](计算机网络.md)
-
-* 数据结构与算法
-
+* [Linux](Linux.md)
+* [Docker](Docker.md)
+* [Git](git.md)
+* [数据结构与算法](数据结构与算法.md)
 * Mysql
 
   * [索引](索引.md)
   * [事务](事务.md)
-
 * [Redis](Redis.md)
+* [Es](Es.md)
+* [Hbase](Hbase.md)
+* [Nginx](Nginx.md)
+* [消息队列](消息队列.md)
+* [Kafka](Kafka.md)
+  * [RocketMQ](RocketMQ.md)
+* [分布式](分布式.md)
+  * [分布式锁](分布式锁.md)
+* [Zookeeper](Zookeeper.md)
+  * [Motan](Motan.md)
+* [Elastic job][ElasticJob.md]
+  * [ELK](ELK.md)
+  * [Apollo](Apollo.md)
+  * [Sentinel](Sentinel.md)
+  * [ID生成器](ID生成器.md)
+  * [分布式事务](分布式事务.md)
 
-* 消息队列
+* 系统架构
+  * [秒杀系统](秒杀系统.md)
+* [海量数据场景](海量数据场景.md)
+* [线上故障排查](线上故障排查.)
 
-  * [Kafka](Kafka.md)
-  * RocketMQ
-  
-* [分布式锁](分布式锁.md)
-  
 
-  
 
-  
-  
-  
-  
-  
