@@ -174,3 +174,6 @@ es存储索引信息，hbase才是真的存储数据
 
 使用ElasticSearch赋能HBase二级索引
 
+
+
+![image-20200616095722420](assets/image-20200616095722420.png)

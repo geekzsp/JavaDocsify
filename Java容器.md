@@ -681,6 +681,16 @@ hash冲突 之后 进行拉链。
 
 扩容： （n-1）&hash    重新计算位置  没有变动的还是放在原处 变动的 进行移动。
 
+
+
+## 为什么equal()和hashCode()
+
+所以当我们的对象一旦作为HashMap中的key，或者是HashSet中的元素使用时，就必须同时重写hashCode()和equal()方法，因为hashCode会影响key存储的数组下标及与链表元素的初步判断，equal()是作为判断key与链表中的key是否相等的最后标准。
+
+所以只重写hashCode()方法，会导致无法正确地与链表元素进行相等判断，从而无法保证去重）
+
+只重写equals()方法导致键值对映射到HashMap中不同数组下标，无法保证去重
+
 ## ConcurrentHashMap
 
 ![img](assets/image-20191209001038024.png)

@@ -49,3 +49,18 @@
 
 
 # 
+
+
+
+### 面试官：你分析过mybatis工作原理吗？
+
+[面试官：你分析过mybatis工作原理吗？](https://mp.weixin.qq.com/s/YoNXGutxBWVxNeNsJGnGGQ)
+
+我将其工作原理分为六个部分：
+
+1. 读取核心配置文件并返回`InputStream`流对象。
+2. 根据`InputStream`流对象解析出`Configuration`对象，然后创建`SqlSessionFactory`工厂对象
+3. 根据一系列属性从`SqlSessionFactory`工厂中创建`SqlSession`
+4. 从`SqlSession`中调用`Executor`执行数据库操作&&生成具体SQL指令
+5. 对执行结果进行二次封装
+6. 提交与事务

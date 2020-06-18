@@ -1,5 +1,11 @@
 # 分布式系统
 
+核心域：核心竞争力，核心业务 (需要投入最好的人力和资源)
+
+支持子域： 没有，很糟糕; 有，也不足以脱颖而出(可以考虑外包)
+
+通用子域：都有的东西, 比如认证, 发短信, 客服系统等(可以考虑购买商业解决方案或者采用开源方案)
+
 # Spring Cloud
 
 Spring Cloud 是规范 实现 有  Spring Cloud NetFlix and Spring Cloud Alibaba
