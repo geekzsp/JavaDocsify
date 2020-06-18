@@ -22,7 +22,7 @@ Elastic-Job-Lite定位为轻量级无中心化解决方案，使用jar包的形�
 
 ## How
 
-![](assets/elastic_job_lite.png)
+![](../assets/elastic_job_lite.png)
 
 ### 分片概念
 

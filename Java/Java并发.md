@@ -28,7 +28,7 @@
 这6种状态定义在Thread类的State枚举中，可查看源码进行一一对应。
 
 * 线程状态图
-  ![20181120173640764](assets/20181120173640764.jpeg)
+  ![20181120173640764](../assets/20181120173640764.jpeg)
 
 
 >    1. 初始状态
@@ -116,7 +116,7 @@
 
 ## 等待队列 与同步队列
 
-![image-20200613151310669](assets/image-20200613151310669.png)
+![image-20200613151310669](../assets/image-20200613151310669.png)
 
 同步队列里面放的都是想争夺对象锁的线程。
 等待队列： 释放锁之后进入等待队列
@@ -137,21 +137,21 @@ o.notifyAll() 将所有的等待队列中的线程 移入同步队列  竞争获
 
    源码：
 
-<img src="assets/image-20200614095609462.png" alt="image-20200614095609462" style="zoom:50%;" />
+<img src="../assets/image-20200614095609462.png" alt="image-20200614095609462" style="zoom:50%;" />
 
-<img src="assets/image-20200614095638336.png" alt="image-20200614095638336" style="zoom:50%;" />
+<img src="../assets/image-20200614095638336.png" alt="image-20200614095638336" style="zoom:50%;" />
 
-<img src="assets/image-20200614095715305.png" alt="image-20200614095715305" style="zoom:50%;" />
+<img src="../assets/image-20200614095715305.png" alt="image-20200614095715305" style="zoom:50%;" />
 
-<img src="assets/image-20200614095939987.png" alt="image-20200614095939987" style="zoom:50%;" />
+<img src="../assets/image-20200614095939987.png" alt="image-20200614095939987" style="zoom:50%;" />
 
-<img src="assets/image-20200614101511277.png" alt="image-20200614101511277" style="zoom:50%;" />
+<img src="../assets/image-20200614101511277.png" alt="image-20200614101511277" style="zoom:50%;" />
 
 
 
-<img src="assets/image-20200614101528666.png" alt="image-20200614101528666" style="zoom:50%;" />
+<img src="../assets/image-20200614101528666.png" alt="image-20200614101528666" style="zoom:50%;" />
 
-<img src="assets/image-20200613151347659.png" alt="image-20200613151347659" style="zoom:50%;" />
+<img src="../assets/image-20200613151347659.png" alt="image-20200613151347659" style="zoom:50%;" />
 
 
 
@@ -218,7 +218,7 @@ Thread join()方法结束、 Thread isAlive(的返回值手段检测到线程已
 
 加入高速缓存带来了一个新的问题：缓存一致性。如果多个缓存共享同一块主内存区域，那么多个缓存的数据可能会不一致，需要一些协议来解决这个问题。
 
-![img](assets/942ca0d2-9d5c-45a4-89cb-5fd89b61913f.png)
+![img](../assets/942ca0d2-9d5c-45a4-89cb-5fd89b61913f.png)
 
 
 
@@ -226,9 +226,9 @@ Thread join()方法结束、 Thread isAlive(的返回值手段检测到线程已
 
 线程只能直接操作工作内存中的变量，不同线程之间的变量值传递需要通过主内存来完成。
 
-![img](assets/15851555-5abc-497d-ad34-efed10f43a6b.png)
+![img](../assets/15851555-5abc-497d-ad34-efed10f43a6b.png)
 
-<img src="assets/image-20200613205416798.png" alt="image-20200613205416798" style="zoom:50%;" />
+<img src="../assets/image-20200613205416798.png" alt="image-20200613205416798" style="zoom:50%;" />
 
 每个线程有自己的工作内存，同时还有一个共享的主内存。比如说有两个线程，他们的代码里都需要读取data这个变量的值，那么他们都会从主内存里加载data变量的值到自己的工作内存，然后才可以使用那个值。
 
@@ -240,7 +240,7 @@ Thread join()方法结束、 Thread isAlive(的返回值手段检测到线程已
 
 带来的问题
 
-<img src="assets/image-20200613205540066.png" alt="image-20200613205540066" style="zoom:50%;" />
+<img src="../assets/image-20200613205540066.png" alt="image-20200613205540066" style="zoom:50%;" />
 
 我们来设想一下，假如说线程1修改了data变量的值为1，然后将这个修改写入自己的本地工作内存。那么此时，线程1的工作内存里的data值为1。
 
@@ -260,7 +260,7 @@ Thread join()方法结束、 Thread isAlive(的返回值手段检测到线程已
 
 此时，他就必须重新从主内存中加载data变量最新的值！那么不就可以读取到data = 1这个最新的值了！整个过程，参见下图：
 
-![image-20200613210926710](assets/image-20200613210926710.png)
+![image-20200613210926710](../assets/image-20200613210926710.png)
 
 最后给大家提一嘴，**volatile主要作用是保证可见性以及有序性。**
 
@@ -358,7 +358,7 @@ public class SynchronizedDemo {
 }
 ```
 
-![synchronized关键字原理](assets/synchronized关键字原理.png)
+![synchronized关键字原理](../assets/synchronized关键字原理.png)
 
 **synchronized 同步语句块的实现使用的是 monitorenter 和 monitorexit 指令，其中 monitorenter 指令指向同步代码块的开始位置，monitorexit 指令则指明同步代码块的结束位置。** 当执行 monitorenter 指令时，线程试图获取锁也就是获取 monitor(monitor对象存在于每个Java对象的对象头中，synchronized 锁便是通过这种方式获取锁的，也是为什么Java中任意对象可以作为锁的原因) 的持有权。当计数器为0则可以成功获取，获取后将锁计数器设为1也就是加1。相应的在执行 monitorexit 指令后，将锁计数器设为0，表明锁被释放。如果获取对象锁失败，那当前线程就要阻塞等待，直到锁被另外一个线程释放为止。
 
@@ -374,17 +374,17 @@ public class SynchronizedDemo2 {
 }
 ```
 
-![synchronized关键字原理](assets/synchronized关键字原理2.png)
+![synchronized关键字原理](../assets/synchronized关键字原理2.png)
 
 synchronized修饰方法，javac为方法的flags属性添加了一个ACCSYNCHRONIZED关键字，在JVM进行方法调用时，发现调用的方法被ACCSYNCHRONIZED修饰，则会先尝试获得锁。
 
 在JVM中，一个Java对象其实由**对象头**+**实例数据**+**对齐填充**三部分组成，而对象头主要包含**Mark Word**+指向对象所属的类的指针组成(如果是数组对象，还会包含长度)。像下图一样：
 
-<img src="assets/image-20200613235330432.png" alt="image-20200613235330432" style="zoom:50%;" />
+<img src="../assets/image-20200613235330432.png" alt="image-20200613235330432" style="zoom:50%;" />
 
 **Mark Word**：存储对象自身的运行时数据，例如hashCode，GC分代年龄，锁状态标志，线程持有的锁等等。在32位系统占4字节，在64位系统中占8字节，所以它能存储的数据量是有限的，所以主要通过设立**是否偏向锁的标志位**和**锁标志位**用于区分其他位数存储的数据是什么，具体请看下图：
 
-![image-20200613235346504](assets/image-20200613235346504.png)
+![image-20200613235346504](../assets/image-20200613235346504.png)
 
 锁信息都是存在锁对象的**Mark Word**中的，当对象状态为偏向锁时，**Mark Word**存储的是偏向的线程ID；当状态为轻量级锁时，**Mark Word**存储的是指向线程栈中 `LockRecord`的指针；当状态为重量级锁时，**Mark Word**为指向堆中的monitor对象的指针。
 
@@ -396,7 +396,7 @@ Hotspot的作者经过以往的研究发现大多数情况下**锁不仅不存�
 
 **偏向锁升级的时机为**：**当一个线程获得了偏向锁，在执行时，只要有另一个线程尝试获得偏向锁，并且当前持有偏向锁的线程还在同步块中执行，则该偏向锁就会升级成轻量级锁。**
 
-<img src="assets/image-20200613235451402.png" alt="image-20200613235451402" style="zoom:50%;" />
+<img src="../assets/image-20200613235451402.png" alt="image-20200613235451402" style="zoom:50%;" />
 
 ### 轻量级锁
 
@@ -414,11 +414,11 @@ JDK采用了适应性自旋，简单来说就是线程如果自旋成功了，�
 
 **轻量级锁升级过程:**自旋也不是一直进行下去的，如果自旋到一定程度（和JVM、操作系统相关），依然没有获取到锁，称为自旋失败，那么这个线程会阻塞。同时这个锁就会升级成重量级锁。
 
-<img src="assets/image-20200613235956844.png" alt="image-20200613235956844" style="zoom:50%;" />
+<img src="../assets/image-20200613235956844.png" alt="image-20200613235956844" style="zoom:50%;" />
 
 ### 重量级锁
 
-![img](assets/sychronize.png)
+![img](../assets/sychronize.png)
 
 ### 为什么说是轻量级，重量级锁是不公平的？
 
@@ -442,7 +442,7 @@ JDK1.6 对锁的实现引入了大量的优化，如偏向锁、轻量级锁、�
 
 篇幅有限，下面是各种锁的优缺点级适用场景，来自《并发编程的艺术》：
 
-![img](assets/640-20200614000428538.png)
+![img](../assets/640-20200614000428538.png)
 
 ### **volatile 和synchronized 关键字的区别**
 
@@ -461,7 +461,7 @@ volatile关键字用于解决变量在多个线程之间的可见性，而synchr
 
 **Atomic原子类底层用的不是传统意义的锁机制，而是无锁化的CAS机制，通过CAS机制保证多线程修改一个数值的安全性**
 
-<img src="assets/image-20200613223818966.png" alt="image-20200613223818966" style="zoom:50%;" />
+<img src="../assets/image-20200613223818966.png" alt="image-20200613223818966" style="zoom:50%;" />
 
 **LongAdder**
 
@@ -488,7 +488,7 @@ public final long getAndAddLong(Object o, long offset, long delta) {
     }
 ```
 
-<img src="assets/image-20200613220626955.png" alt="image-20200613220626955" style="zoom:50%;" />
+<img src="../assets/image-20200613220626955.png" alt="image-20200613220626955" style="zoom:50%;" />
 
 但是这个CAS有没有问题呢？肯定是有的。比如说大量的线程同时并发修改一个AtomicInteger，可能有**很多线程会不停的自旋**，进入一个无限重复的循环中。
 
@@ -498,7 +498,7 @@ public final long getAndAddLong(Object o, long offset, long delta) {
 
 他就是尝试使用**分段CAS**以及**自动分段迁移**的方式来大幅度提升多线程高并发执行CAS操作的性能！
 
-<img src="assets/image-20200613223059980.png" alt="image-20200613223059980" style="zoom:50%;" />
+<img src="../assets/image-20200613223059980.png" alt="image-20200613223059980" style="zoom:50%;" />
 
 在LongAdder的底层实现中，首先有一个base值，刚开始多线程来不停的累加数值，都是对base进行累加的，比如刚开始累加成了base = 5。
 
@@ -548,7 +548,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 如说ReentrantLock、ReentrantReadWriteLock底层都是基于AQS来实现的。
 
-<img src="assets/image-20200613232118083.png" alt="image-20200613232118083" style="zoom:50%;" />
+<img src="../assets/image-20200613232118083.png" alt="image-20200613232118083" style="zoom:50%;" />
 
 ，ReentrantLock内部包含了一个AQS对象，也就是AbstractQueuedSynchronizer类型的对象。这个AQS对象就是ReentrantLock可以实现加锁和释放锁的关键性的核心组件。
 
@@ -558,7 +558,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 另外，这个AQS内部还有一个**关键变量**，用来记录**当前加锁的是哪个线程**，初始化状态下，这个变量是null。
 
-![img](assets/640.png)
+![img](../assets/640.png)
 
 接着线程1跑过来调用ReentrantLock的lock()方法尝试进行加锁，这个加锁的过程，直接就是用CAS操作将state值从0变为1。
 
@@ -568,7 +568,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 一旦线程1加锁成功了之后，就可以设置当前加锁线程是自己。所以大家看下面的图，就是线程1跑过来加锁的一个过程。
 
-<img src="assets/image-20200613232312778.png" alt="image-20200613232312778" style="zoom:50%;" />
+<img src="../assets/image-20200613232312778.png" alt="image-20200613232312778" style="zoom:50%;" />
 
 
 
@@ -600,7 +600,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 给大家来一张图，一起来感受一下这个过程：
 
-![img](assets/640-20200613232432826.png)
+![img](../assets/640-20200613232432826.png)
 
 
 
@@ -610,7 +610,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 所以大家可以看到，AQS是如此的核心！AQS内部还有一个等待队列，专门放那些加锁失败的线程！
 
-<img src="assets/image-20200613232555816.png" alt="image-20200613232555816" style="zoom:50%;" />
+<img src="../assets/image-20200613232555816.png" alt="image-20200613232555816" style="zoom:50%;" />
 
 线程1在执行完自己的业务逻辑代码之后，就会释放锁！**他释放锁的过程非常的简单**，就是将AQS内的state变量的值递减1，如果state值为0，则彻底释放锁，会将“加锁线程”变量也设置为null！
 
@@ -622,7 +622,7 @@ java并发包下很多API都是基于AQS来实现的加锁和释放锁等功能�
 
 此外，还要把**“加锁线程”**设置为线程2自己，同时线程2自己就从等待队列中出队了。
 
-![image-20200613232715053](assets/image-20200613232715053.png)
+![image-20200613232715053](../assets/image-20200613232715053.png)
 
 !> 其实一句话总结**AQS就是一个并发包的基础组件，用来实现各种锁，各种同步组件的。****它包含了state变量、加锁线程、等待队列等并发中的核心组件。**
 
@@ -780,7 +780,7 @@ public class Test {
 
 维护了一个计数器 cnt，每次调用 countDown() 方法会让计数器的值减 1，减到 0 的时候，那些因为调用 await() 方法而在等待的线程就会被唤醒。
 
-![img](assets/ba078291-791e-4378-b6d1-ece76c2f0b14.png)
+![img](../assets/ba078291-791e-4378-b6d1-ece76c2f0b14.png)
 
 
 
@@ -845,7 +845,7 @@ public CyclicBarrier(int parties) {
 }Copy to clipboardErrorCopied
 ```
 
-![img](assets/f71af66b-0d54-4399-a44b-f47b58321984.png)
+![img](../assets/f71af66b-0d54-4399-a44b-f47b58321984.png)
 
 
 
@@ -972,7 +972,7 @@ milliseconds,runnableTaskQueue, handler);
   * DiscardOldestPolicy: 抛弃队列中等待最久的任务 ， 然后把当前任务加入队 列中。
   * CalerRunsPolicy:调用任务的 run()方法绕过线程池直接执行。
 
-![image-20200614113428203](assets/image-20200614113428203.png)
+![image-20200614113428203](../assets/image-20200614113428203.png)
 
 ### **执行execute()方法和submit()方法的区别是什么呢？**
 

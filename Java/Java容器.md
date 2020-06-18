@@ -1,6 +1,6 @@
 ## 容器
 
-![image-20200614134546606](assets/image-20200614134546606.png)
+![image-20200614134546606](../assets/image-20200614134546606.png)
 
 ## ArrayList
 
@@ -19,7 +19,7 @@ public class ArrayList<E> extends AbstractList<E>
 private static final int DEFAULT_CAPACITY = 10;
 ```
 
-![img](assets/image-20191208232221265.png)
+![img](../assets/image-20191208232221265.png)
 
 ### 扩容
 
@@ -269,7 +269,7 @@ transient Node<E> first;
 transient Node<E> last;
 ```
 
-![img](assets/image-20191208233940066.png)
+![img](../assets/image-20191208233940066.png)
 
 
 
@@ -299,7 +299,7 @@ ArrayList底层结构是数组  LinkedList 是双向链表（
 
 内部包含了一个 Entry 类型的数组 table。Entry 存储着键值对。它包含了四个字段，从 next 字段我们可以看出 Entry 是一个链表。即数组中的每个位置被当成一个桶，一个桶存放一个链表。HashMap 使用拉链法来解决冲突，同一个链表中存放哈希值和散列桶取模运算结果相同的 Entry。
 
-![img](assets/image-20191208234948205-20200614135010395.png)
+![img](../assets/image-20191208234948205-20200614135010395.png)
 
 ```java
 transient Entry[] table;Copy to clipboardErrorCopied
@@ -382,7 +382,7 @@ map.put("K3", "V3");Copy to clipboardErrorCopied
 - 计算键值对所在的桶；
 - 在链表上顺序查找，时间复杂度显然和链表的长度成正比。
 
-![img](assets/image-20191208235258643.png)
+![img](../assets/image-20191208235258643.png)
 
 
 
@@ -693,7 +693,7 @@ hash冲突 之后 进行拉链。
 
 ## ConcurrentHashMap
 
-![img](assets/image-20191209001038024.png)
+![img](../assets/image-20191209001038024.png)
 
 ConcurrentHashMap 和 HashMap 实现上类似，最主要的差别是 ConcurrentHashMap 采用了分段锁（Segment），每个分段锁维护着几个桶（HashEntry），多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高（并发度就是 Segment 的个数）。
 

@@ -1,3 +1,5 @@
+# Java基础
+
 [TOC]
 # Java基础
 ## 语言特点
@@ -503,3 +505,145 @@ public static void bubbleSort1(int [] a, int n){
 # HR
 
 * 试用期时间 和通过试用期的标准
+## 序列化
+
+我们知道，**反序列化必须拥有class文件，但随着项目的升级，class文件也会升级，序列化怎么保证升级前后的兼容性呢？**
+
+java序列化提供了一个private static final long serialVersionUID 的序列化版本号，只有版本号相同，即使更改了序列化属性，对象也可以正确被反序列化回来。
+
+```java
+public class Person implements Serializable {
+    //序列化版本号
+    private static final long serialVersionUID = 1111013L;
+    private String name;
+    private int age;
+    //省略构造方法及get,set
+}
+
+```
+
+如果反序列化使用的**class的版本号**与序列化时使用的**不一致**，反序列化会**报InvalidClassException异常。**
+
+![image-20200617153501363](../assets/image-20200617153501363.png)
+
+**序列化版本号可自由指定，如果不指定，JVM会根据类信息自己计算一个版本号，这样随着class的升级，就无法正确反序列化；不指定版本号另一个明显隐患是，不利于jvm间的移植，可能class文件没有更改，但不同jvm可能计算的规则不一样，这样也会导致无法反序列化。**
+
+什么情况下需要修改serialVersionUID呢？分三种情况。
+
+- 如果只是修改了方法，反序列化不容影响，则无需修改版本号；
+- 如果只是修改了静态变量，瞬态变量（transient修饰的变量），反序列化不受影响，无需修改版本号；
+- 如果修改了非瞬态变量，则可能导致反序列化失败。**如果新类中实例变量的类型与序列化时类的类型不一致，则会反序列化失败，这时候需要更改serialVersionUID。**如果只是新增了实例变量，则反序列化回来新增的是默认值；如果减少了实例变量，反序列化时会忽略掉减少的实例变量。
+
+### 总结
+
+所有需要网络传输的对象都需要实现序列化接口，通过建议所有的javaBean都实现Serializable接口。
+
+对象的类名、实例变量（包括基本类型，数组，对其他对象的引用）都会被序列化；方法、类变量、transient实例变量都不会被序列化。
+
+如果想让某个变量不被序列化，使用transient修饰。
+
+序列化对象的引用类型成员变量，也必须是可序列化的，否则，会报错。
+
+反序列化时必须有序列化对象的class文件。
+
+当通过文件、网络来读取序列化后的对象时，必须按照实际写入的顺序读取。
+
+单例类序列化，需要重写readResolve()方法；否则会破坏单例原则。
+
+同一对象序列化多次，只有第一次序列化为二进制流，以后都只是保存序列化编号，不会重复序列化。
+
+建议所有可序列化的类加上serialVersionUID 版本号，方便项目升级。
+
+
+## 修饰符
+
+### 按照位置划分
+
+#### 类修饰符
+
+* public
+
+* 默认修饰符friendly  （不写）
+
+* abstract 抽象类
+
+* final 不能被继承
+
+  ![](https://tva1.sinaimg.cn/large/007S8ZIlly1gfm7ng6i5bj312s0jqaga.jpg)
+
+#### 成员变量修饰符
+
+* public 
+
+* protected  子类 以及同包能访问    意味着 子类只能使用this去访问
+
+* 默认    同包能访问
+
+* private
+
+* final  只能赋值一次
+
+  final 修饰成员变量必须要显示复制 否则会报错
+
+  * 静态成员变量（类变量）有2个赋值时机
+    1. 声明时赋值
+    2. 静态代码块赋值
+  * 实例变量有3个赋值时机
+    1. 声明时赋值
+    2. 普通代码块赋值
+    3. 构造函数赋值
+
+  **当final修饰基本数据类型变量时，不能对基本数据类型变量重新赋值，因此基本数据类型变量不能被改变。而对于引用类型变量而言，它仅仅保存的是一个引用，final只保证这个引用类型变量所引用的地址不会发生改变，即一直引用这个对象，但这个对象属性是可以改变的**。
+
+  ![](https://tva1.sinaimg.cn/large/007S8ZIlly1gfm7kk9byhj30qu070abh.jpg)
+
+* volatile 可见性
+
+#### 构造函数修饰符
+
+* public （最常用，其他类的任何位置都可以访问）         
+
+* protected（能够在同一包中被子类访问）
+
+* 什么都不写，""(能够被同一包里的类访问)
+
+*  private（经常使用的单例模式中）不能在别的类进行实例化
+
+#### 方法修饰符
+
+* final
+
+  ![](https://tva1.sinaimg.cn/large/007S8ZIlly1gfm7lz2t5wj31660hqgnx.jpg)
+
+* static
+* synchronize
+* native，本地修饰符。指定此方法的方法体是用其他语言在程序外部编写的。
+
+### 按照功能划分
+
+
+
+
+
+
+
+
+
+
+
+### 参考资料
+
+
+
+> 　　protected是最难理解的一种Java类成员访问权限修饰词。在编程中，碰到涉及protected的调用时，首先要确定出该protected成员来自何方，其可见性范围是什么，然后就正确无误的使用了。
+>
+> https://blog.csdn.net/justloveyou_/article/details/61672133
+
+
+
+> [final关键字全面解析](https://www.jianshu.com/p/1f4b0f98cbf1)
+
+
+
+# 内部类
+

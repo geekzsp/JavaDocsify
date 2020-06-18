@@ -24,18 +24,18 @@
 6.服务器节点动态上下线         
 
 7. 数据的发布订阅 watcher
-   ![WX20190318-111342@2x](assets/2KakJku.png)
+   ![WX20190318-111342@2x](../assets/2KakJku.png)
 
 ## 数据结构
 
 * 类似树
-  ![WX20190318-111042@2x](assets/sDlM4uw.png)
-  ![WX20190318-160346@2x](assets/i4yCkS5.png)
+  ![WX20190318-111042@2x](../assets/sDlM4uw.png)
+  ![WX20190318-160346@2x](../assets/i4yCkS5.png)
 * 包含 临时 持久化  顺序 非顺序 Znode（1MB）
 
 ## 监听器原理
 
-![WX20190318-160627@2x](assets/KHE52VE.png)
+![WX20190318-160627@2x](../assets/KHE52VE.png)
 
 1. 两个线程 一个线程负责网络连接(connet),一个线程负责监听(listener)
 2. 通过 connect 线程将注册的监听事件发送给 Zookeeper。
@@ -66,7 +66,7 @@
 ## 写数据过程
 
 收到请求发给leader 然后leader发给follower 多数 follower写成功就成功
-![WX20190318-161445@2x](assets/fWTNWrT.png)
+![WX20190318-161445@2x](../assets/fWTNWrT.png)
 
 * 命令 `create` `set` `get` `ls` `stat` `delete`
 

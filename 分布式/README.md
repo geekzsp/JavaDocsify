@@ -9,8 +9,8 @@
 # Spring Cloud
 
 Spring Cloud 是规范 实现 有  Spring Cloud NetFlix and Spring Cloud Alibaba
-![WX20190315-164937@2x](assets/XQxLikC.png)
-![1123](assets/G2MpfMe.png)
+![WX20190315-164937@2x](../assets/XQxLikC.png)
+![1123](../assets/G2MpfMe.png)
 
 ## 注册中心  服务注册和发现
 

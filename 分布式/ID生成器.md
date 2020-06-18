@@ -35,7 +35,7 @@ Redis的所有命令操作都是单线程的，本身提供像 incr 和 increby 
 
 ## Twitter的snowflake算法
 
-![v2-ebae02708fffe6e24fbb3780e0ffab96_hd](assets/VJxvP5l.jpg)
+![v2-ebae02708fffe6e24fbb3780e0ffab96_hd](../assets/VJxvP5l.jpg)
 
 * 41位的时间序列，精确到毫秒，可以使用69年
 * 10位的机器标识，最多支持部署1024个节点

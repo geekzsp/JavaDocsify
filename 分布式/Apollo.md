@@ -23,7 +23,7 @@ Apollo配置中心应运而生！
 
 ### 整体架构
 
-![](assets/overall-architecture.png)
+![](../assets/overall-architecture.png)
 
 #### ConfigService
 
@@ -72,15 +72,15 @@ Apollo配置中心应运而生！
 
 #### 配置发布后的实时推送设计
 
-![](assets/release-message-notification-design.png) 
-![](assets/release-message-design.png ':size=500')
+![](../assets/release-message-notification-design.png) 
+![](../assets/release-message-design.png ':size=500')
 
 **ReleaseMessage**
 没有引入mq，采用的线程每秒定时扫描机制
 
 ### 客户端设计
 
-![](assets/client-architecture.png)
+![](../assets/client-architecture.png)
 上图简要描述了Apollo客户端的实现原理：
 
 1. 客户端和服务端保持了一个长连接，从而能第一时间获得配置更新的推送。
@@ -110,4 +110,4 @@ Apollo配置中心应运而生！
 ### 和Spring集成的原理
 
 Spring从3.1版本开始增加了ConfigurableEnvironment和PropertySource：
-![WX20190409-150047@2x](assets/5cac43313f2f1.png)
+![WX20190409-150047@2x](../assets/5cac43313f2f1.png)

@@ -14,7 +14,7 @@ RocketMQ是阿里开源的消息中间件，它是纯Java开发，具有高吞�
 * 亿级消息堆积能力
 * 较少的依赖
 
-![](assets/TB18GKUPXXXXXXRXFXXXXXXXXXX.png)
+![](../assets/TB18GKUPXXXXXXRXFXXXXXXXXXX.png)
 
 * Name Server是一个几乎无状态节点，可集群部署，节点之间无任何信息同步。 **路由**  用于给 Producer 和 Consumer 查找 Broker 信息
 * Broker分为Master与Slave，一个Master可以对应多个Slave，但是一个Slave只能对应一个Master，每个Broker与Name Server集群中的所有节点建立长连接，定时注册Topic信息到所有Name Server。
@@ -36,7 +36,7 @@ RocketMQ是阿里开源的消息中间件，它是纯Java开发，具有高吞�
 - 每条记录包括：消息长度和消息文本（消息体，属性，uid等等）
 - 因每条消息长度不一致，每个commitLog的记录长度也不一致
 
-![image-20200617143643255](assets/image-20200617143643255.png)
+![image-20200617143643255](../assets/image-20200617143643255.png)
 
 ### ConsumerQueue
 
@@ -46,7 +46,7 @@ RocketMQ是阿里开源的消息中间件，它是纯Java开发，具有高吞�
 - producer发送消息后，先保存到commitLog，再异步建立该条消息对应的topic + queue对应的ConsumerQueue索引
 - **第三部分的Hash(tag)是服务端过滤消息的重要依据**
 
-![image-20200617143652316](assets/image-20200617143652316.png)
+![image-20200617143652316](../assets/image-20200617143652316.png)
 
 RocketMQ采用的是混合型的存储结构，即为Broker单个实例下所有的队列共用一个日志数据文件（即为CommitLog）来存储。RocketMQ的混合型存储结构(多个Topic的消息实体内容都存储于一个CommitLog中)针对Producer和Consumer分别采用了数据和索引部分相分离的存储结构，Producer发送消息至Broker端，然后Broker端使用同步或者异步的方式对消息刷盘持久化，保存至CommitLog中。只要消息被刷盘持久化至磁盘文件CommitLog中，那么Producer发送的消息就不会丢失。正因为如此，Consumer也就肯定有机会去消费这条消息。当无法拉取到消息后，可以等下一次消息拉取，同时服务端也支持长轮询模式，如果一个消息拉取请求未拉取到消息，Broker允许等待30s的时间，只要这段时间内有新消息到达，将直接返回给消费端。这里，RocketMQ的具体做法是，使用Broker端的后台服务线程—ReputMessageService不停地分发请求并异步构建ConsumeQueue（逻辑消费队列）和IndexFile（索引文件）数据。
 
