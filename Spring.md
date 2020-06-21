@@ -294,6 +294,16 @@ public class Client2 {
 
 ```
 
+
+
+**Spring 5.x 中 AOP 默认依旧使用 JDK 动态代理。**
+
+**SpringBoot 2.x 开始，为了解决使用 JDK 动态代理可能导致的类型转化异常而默认使用 CGLIB。**
+
+**在 SpringBoot 2.x 中，如果需要默认使用 JDK 动态代理可以通过配置项`spring.aop.proxy-target-class=false`来进行修改，`proxyTargetClass`配置已无效。**
+
+> [惊人！Spring boot Cglib ？从现象到源码深度分析](https://juejin.im/post/5db7870a518825647178f16c)
+
 ## Spring 事务
 
 
@@ -440,7 +450,7 @@ public class InterceptorConfig extends WebMvcConfigurerAdapter {
 
 Spring Boot 是Spring开源组织的子项目，主要是简化了使用Spring的难度，省去了繁琐的xml配置，提供了各种启动器方便上手。内置容器
 
-## **核心注解**
+### **核心注解**
 
 * 启动类上面的注解是*@SpringBootApplication，它也是 Spring Boot 的核心注解，主要组合包含了以下 3 个注解：
   1. @SpringBootConfiguration：组合了 @Configuration 注解，实现配置文件的功能。
@@ -480,6 +490,89 @@ Starters可以理解为启动器，它包含了一系列可以集成到应用里
 ![image-20200615172208961](assets/image-20200615172208961.png)
 
 spring会扫描 meta-inf spring.factories 中定义的类 并进行注入
+
+### 自定义spring boot starter
+
+
+
+- Spring Boot在启动时扫描项目所依赖的JAR包，寻找包含spring.factories文件的JAR包；
+- 根据spring.factories配置加载AutoConfiguration类；
+- 根据@Conditional注解的条件，进行自动配置并将Bean注入Spring容器。
+
+1. maven引入
+
+```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-autoconfigure</artifactId>
+    <version>2.1.5.RELEASE</version>
+</dependency>
+```
+
+2. META-INF spring.factories
+
+```properties
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
+```
+
+3.
+
+![image-20200621130811793](assets/image-20200621130811793.png)
+
+@EnableConfigurationProperties注解的作用是：使使用 @ConfigurationProperties 注解的类生效。
+
+@ConditionalOnBean（仅仅在当前上下文中存在某个对象时，才会实例化一个Bean）
+@ConditionalOnClass（某个class位于类路径上，才会实例化一个Bean）
+@ConditionalOnExpression（当表达式为true的时候，才会实例化一个Bean）
+@ConditionalOnMissingBean（仅仅在当前上下文中不存在某个对象时，才会实例化一个Bean）
+@ConditionalOnMissingClass（某个class类路径上不存在的时候，才会实例化一个Bean）
+@ConditionalOnNotWebApplication（不是web应用）
+
+### Springboot @Enable*注解的工作原理
+
+[Spring-Boot之@Enable*注解的工作原理](https://www.jianshu.com/p/3da069bd865c)
+
+@enable*是springboot中用来启用某一个功能特性的一类注解。其中包括我们常用的`@SpringBootApplication`注解中用于开启自动注入的annotation`@EnableAutoConfiguration`，开启异步方法的annotation`@EnableAsync`，开启将配置文件中的属性以bean的方式注入到IOC容器的annotation`@EnableConfigurationProperties`等。
+
+#### 一、观察任一@Enable*注解的源码，以`@EnableAsync`为例
+
+![image-20200621130113409](assets/image-20200621130113409.png)
+
+@EnableAsync源码
+
+`@EnableAsync`的作用是启用异步执行，使标注`@Async`注解的方法能够和其他方法异步执行。读者可以Google一下`@EnableAsync`这个注解的使用场景，本文不再赘述
+
+我们发现，这个注解的重点在我标红的`@Import({AsyncConfigurationSelector.class})`这段代码。解释一下`@Import`和`XxxSelector.class`的作用。
+
+`@Import`
+
+用来导入一个或多个class，这些类会注入到spring容器中，或者配置类，配置类里面定义的bean都会被spring容器托管。在这里我们加入的`AsyncConfigurationSelector.class`放入Spring容器中管理。
+
+Spring会把实现ImportSelector接口的类中的SelectImport方法返回的值注入到Spring容器中。这个方法的返回值必须是一个class的全类名的String[]。举个例子：
+
+```java
+public class MyImportSelector implements ImportSelector {
+    
+    @Override
+    public String[] selectImports(AnnotationMetadata annotationMetadata) {
+        return new String[]{"com.springboot.enable.User", "com.springboot.enable.Car"};
+    }
+}
+```
+
+spring容器会把com.springboot.enable包下的User和Car这两个类放入容器中。
+ 回归正题，我们不是需要通过`@Enable*`注解开启一些功能嘛？答案就我自定义的`MyImportSelector`中。简单来说就是*`@Enable\*`会将XxxImportSelector放入容器中，当Spring启动，会执行selectImports(AnnotationMetadata annotationMetadata)方法，在这个方法中我们做了某些处理，使得和`@Enable\*`搭配使用的注解生效*。哈哈，是不是很绕，多阅读两遍，你就理解了。
+
+
+
+
+
+有@SpringBootApplication了为什么还需要@EnableAsync啊，不是包括enable**了吗？
+
+ 其实springbootapplication虽然包含了enableautoconfiguration，但后者只会读取spring.factories文件中的一些配置的做自动装配的。而asyc注解之所以要用enableasync来激活，是因为它木有放到spring.factories 中的，它是利用的importselector机制实现的。可以看到enableasync中使用了import机制，它配置的是一个importselector子类，所以就可以将其返回的数组值注入到bean容器了
+
+
 
 ### CommandLineRunnner\ApplicationRunner启动时指定特定代码
 
