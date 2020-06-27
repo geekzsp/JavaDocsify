@@ -598,3 +598,15 @@ HTTP/2 支持
 配置属性绑定
 更多改进与加强...
 
+
+
+### Spring Boot 内置tomcat 运行流程
+
+由 refresh() 可知，重写方法的执行顺序为：postProcessBeanFactory()、onRefresh()、finishRefresh()。
+
+onRefresh() 创建 Web 服务器时，首先从 BeanFactory 获取 ServletWebServerFactory 类型的 Bean，即上述的 TomcatServletWebServerFactory。利用这个工厂类的方法`public WebServer getWebServer(ServletContextInitializer... initializers)`来创建 TomcatWebServer，这个方法主要就是为 TomcatWebServer **创建 Tomcat 实例**。
+
+Tomcat 作为 Servlet 容器，负责监听 Socket 请求，并将请求映射、并转交给具体的 Servlet 进行处理。Spring MVC 中非常重要的，负责请求处理调度的类 DispatcherServlet，就是 Servlet 的一个实现，所以在 Spring MVC 应用中，是使用 DispatcherServlet 来处理请求的，其实现 Servlet 的继承关系如下图：
+
+[Springboot 2启动内置Tomcat源码分析](https://www.cnblogs.com/bigshark/p/11361392.html)
+

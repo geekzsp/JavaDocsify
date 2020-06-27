@@ -240,3 +240,24 @@ KeyValue的设计不是源自Bigtable，而是要追溯至论文"The log-structu
 
 
 
+
+
+## 列式存储
+
+hbase，列式存储的一个系统，他不是说按一行一行的格式来进行存储的，按列来进行存储的
+
+ 
+
+rowkey     timestamp   列         值
+
+order_1_110  t3         order:base   xxx
+
+order_1_110  t4         order:detail  xxx
+
+order_1_111  t1         order:base   x1
+
+order_1_111  t2         order:base   x2
+
+order_1_111  t5         order:detail  xxx
+
+order_1_111  t6         order:extent  xxx

@@ -53,6 +53,21 @@
 * 类似Master/Slave， 一个leader 多个follower，leader负责发起投票、进行决议已经更新系统状态。follower用于接收客户请求返回结果，参与投票。
 * 半数以上节点存活 即可工作 >n/2 
 
+## ZAB协议
+
+![image-20200627224809450](../assets/image-20200627224809450.png)
+
+![image-20200627224829830](../assets/image-20200627224829830.png)
+
+## 写数据过程
+
+收到请求发给leader 然后leader发给follower 多数 follower写成功就成功
+![WX20190318-161445@2x](../assets/fWTNWrT.png)
+
+* 命令 `create` `set` `get` `ls` `stat` `delete`
+
+## 
+
 ## 选举  LeaderElection
 
 目前有5台服务器，每台服务器均没有数据，它们的编号分别是1,2,3,4,5,按编号依次启动，它们的选择举过程如下：
@@ -63,12 +78,25 @@
 * 服务器4启动，给自己投票，同时与之前启动的服务器1,2,3交换信息，尽管服务器4的编号大，但之前服务器3已经胜出，所以服务器4只能成为小弟。
   服务器5启动，后面的逻辑同服务器4成为小弟。
 
-## 写数据过程
 
-收到请求发给leader 然后leader发给follower 多数 follower写成功就成功
-![WX20190318-161445@2x](../assets/fWTNWrT.png)
 
-* 命令 `create` `set` `get` `ls` `stat` `delete`
+
+
+zk集群启动的时候，进入恢复模式，选举一个leader出来，然后leader等待集群中过半的follower跟他进行数据同步，只要过半follower完成数据同步，接着就退出恢复模式，可以对外提供服务了
+
+ 
+
+**只要有超过一半的机器，认可你是leader，你就可以被选举为leader**
+
+ 
+
+3台机器组成了一个zk集群，启动的时候，只要有2台机器认可一个人是Leader，那么他就可以成为leader了
+
+ 
+
+3台可以容忍不超过一半的机器宕机，1台
+
+ 
 
 ## 客户端
 

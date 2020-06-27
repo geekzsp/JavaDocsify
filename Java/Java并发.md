@@ -129,6 +129,46 @@ o.notifyAll() 将所有的等待队列中的线程 移入同步队列  竞争获
   * 面向字节 PipedOutputStream PipedInputStream
   * 面向字符 PipedWriter PipedReader
 
+
+
+## 线程中断
+
+线程中断即线程运行过程中被其他线程给打断了，它与 stop 最大的区别是：stop 是由系统强制终止线程，而线程中断则是给目标线程发送一个中断信号，如果目标线程没有接收线程中断的信号并结束线程，线程则不会终止，具体是否退出或者执行其他逻辑由目标线程决定。
+
+我们来看下线程中断最重要的 3 个方法，它们都是来自 Thread 类！
+
+**1、java.lang.Thread#interrupt**
+
+中断目标线程，给目标线程发一个中断信号，线程被打上中断标记。
+
+**2、java.lang.Thread#isInterrupted()**
+
+判断目标线程是否被中断，不会清除中断标记。
+
+**3、java.lang.Thread#interrupted**
+
+判断目标线程是否被中断，会清除中断标记。
+
+
+
+
+
+
+
+
+
+使用lock()获取锁，若获取成功，标记下是该线程获取到了锁（用于锁重入），然后返回。若获取失败，这时跑一个for循环，循环中先将线程阻塞放入等待队列，当被调用signal()时线程被唤醒，这时进行锁竞争（因为默认使用的是非公平锁），如果此时用CAS获取到了锁那么就返回，如果没获取到那么再次放入等待队列，等待唤醒，如此循环。其间就算外部调用了interrupt()，循环也会继续走下去。一直到当前线程获取到了这个锁，此时才处理interrupt标志，若有，则执行 Thread.currentThread().interrupt()，结果如何取决于外层的处理。
+
+和lock()相比，lockInterruptibly()只有略微的修改，for循环过程中，如果检测到interrupt标志为true，则立刻抛出InterruptedException异常，这时程序变通过异常直接返回到最外层了，又外层继续处理，因此使用lockInterruptibly()时必须捕捉异常。
+
+使用tryLock()尝试获取锁，若获取成功，标记下是该线程获取到了锁，然后返回true；若获取失败，此时直接返回false，告诉外层没有获取到锁，之后的操作取决于外层。
+
+当两个线程同时通过Lock#lockInterruptibly()阻塞的获取某个锁时，假如此时线程A获取到了锁，则线程B只有继续等待；此时，让线程A对线程B调用threadB.interrupt()方法，能够中断线程B的等待，让线程B可以先做其他事。
+
+想对的，如果使用内置锁synchronized，当一个线程处于等待某个锁的状态时，是无法被中断的，只有一直等待下去。这是`可中断锁`最大的优势。
+
+> 注意，当一个线程获取了锁之后，是不会被Thread#interrupt()方法中断的。
+
 ## ThreadLocal
 
 
@@ -463,11 +503,21 @@ volatile关键字用于解决变量在多个线程之间的可见性，而synchr
 
 <img src="../assets/image-20200613223818966.png" alt="image-20200613223818966" style="zoom:50%;" />
 
-**LongAdder**
+### AtomicLong
 
 ```java
-AtomicLong atomicLong = new AtomicLong();
-atomicLong.incrementAndGet();
+       AtomicLong atomicLong = new AtomicLong();
+        atomicLong.getAndIncrement();
+        atomicLong.incrementAndGet();
+        atomicLong.getAndSet(1);
+        atomicLong.updateAndGet(x -> 5);
+  long getAndAccumulate = atomicLong.getAndAccumulate(2, new LongBinaryOperator() {
+
+            @Override
+            public long applyAsLong(long left, long right) {
+                return left / right;
+            }
+        });
 ```
 
 源码 cas实现
@@ -494,7 +544,24 @@ public final long getAndAddLong(Object o, long offset, long delta) {
 
 这些线程不停地获取值，然后发起CAS操作，但是发现这个值被别人改过了，于是再次进入下一个循环，获取值，发起CAS操作又失败了，再次进入下一个循环。
 
-**LongAdder**
+### **LongAdder**
+
+```java
+        LongAdder longAdder=new LongAdder();
+        longAdder.increment();
+        longAdder.decrement();
+        longAdder.longValue();//内部调用了sum()
+        longAdder.sum();
+				longAdder.reset();
+```
+
+**源码**
+
+```java
+    public long longValue() {
+        return sum();
+    }
+```
 
 他就是尝试使用**分段CAS**以及**自动分段迁移**的方式来大幅度提升多线程高并发执行CAS操作的性能！
 
@@ -962,10 +1029,19 @@ milliseconds,runnableTaskQueue, handler);
 ```
 
 * corePoolSize: 核心线程   cpu密集型 cpu数+1  io密集型 2*cpu数
+
 * maximumPoolSize: 最大线程
+
 * runnableTaskQueue:空闲时 线程存货时间
+
 * TimeUnit:单位
+
 * runnableTaskQueue：任务队列 LinkedBlockingQueue、ArrayBlockingQueue、PriorityBlockingQueue、SynchronousQueue
+
+* threadFactory
+
+  ![image-20200626183020774](../assets/image-20200626183020774.png)
+
 * RejectedExecutionHandler：饱和策略 
   * AbortPolicy (默认):丢弃任务并抛出 RejectedExecutionException 异常。
   * DiscardPolicy: 丢弃任务，但是不抛出异常 ， 这是不推荐的做法。
@@ -998,6 +1074,125 @@ milliseconds,runnableTaskQueue, handler);
 >Executors 返回线程池对象的弊端如下：
 >FixedThreadPool 和 SingleThreadExecutor ： 允许请求的队列长度为 Integer.MAX_VALUE ，可能堆积大量的请求，从而导致OOM。
 >CachedThreadPool 和 ScheduledThreadPool ： 允许创建的线程数量为 Integer.MAX_VALUE ，可能会创建大量线程，从而导致OOM。
+
+### 线程池异常处理
+
+[Java线程池「异常处理」正确姿势：有病就得治](https://juejin.im/post/5d27c3e6518825451f65ee15)
+
+[线程池异常处理详解，一文搞懂！](https://www.cnblogs.com/ncy1/articles/11629933.html)
+
+[深度解析Java线程池的异常处理机制 #3](https://github.com/aCoder2013/blog/issues/3)
+
+假设我们有一个线程池，由于程序需要，我们向该线程池中提交了好多好多任务，但是 **这些任务都没有对异常进行try catch处理，并且运行的时候都抛出了异常** 。这会对线程池的运行带来什么影响？
+
+正确答案是：没有影响。
+
+线程池 一个任务抛出错误 会不会影响其他线程
+
+
+
+接下来我们来看一下java中的线程池是如何运行我们提交的任务的，详细流程比较复杂，这里我们不关注，我们只关注任务执行的部分。java中的线程池用的是ThreadPoolExecutor，真正执行代码的部分是`runWorker`方法：final void runWorker(Worker w)
+
+<img src="../assets/image-20200626183659705.png" alt="image-20200626183659705" style="zoom:50%;" />
+
+可以看到，程序会捕获包括Error在内的所有异常，并且在程序最后，将出现过的异常和当前任务传递给afterExecute方法。
+
+而ThreadPoolExecutor中的afterExecute方法是没有任何实现的。
+
+```
+ protected void afterExecute(Runnable r, Throwable t) { }
+```
+
+想象下ThreadPoolExecutor这种处理方式会有什么问题？
+
+这样做能够保证我们提交的任务抛出了异常不会影响其他任务的执行，同时也不会对用来执行该任务的线程产生任何影响。
+
+问题就在afterExecute方法上， **这个方法没有做任何处理，所以如果我们的任务抛出了异常，我们也无法立刻感知到。**  即使感知到了，也无法查看异常信息。
+
+所以，作为一名好的开发者，是不应该允许这种情况出现的。
+
+
+
+因此，如果用execute提交的任务，会被封装成了一个runable任务，然后进去 再被封装成一个worker,最后在worker的run方法里面跑runWoker方法， 里面再又调了我们最初的参数 runable任务的任务，并且用try-catch捕获了异常，会被直接抛出去，因此我们在execute中看到了我们的任务的异常信息。
+
+那么为什么submit没有异常信息呢？ 因为submit是将任务封装成了一个futureTask ，
+然后这个futureTask被封装成worker，在woker的run方法里面，最终调用的是futureTask的run方法， 猜测里面是直接吞掉了异常，并没有抛出异常，因此在worker的runWorker方法里面无法捕获到异常。
+
+
+
+#### 解决方案：
+
+1. 直接catch
+
+   第一种思路很简单，就是我们提交任务的时候，将所有可能的异常都Catch住，并且自己处理。
+
+   说白了就是把业务逻辑都trycatch起来。 但是这种思路的缺点就是： 1）所有的不同任务类型都要trycatch，增加了代码量。
+    2）不存在checkedexception的地方也需要都trycatch起来，代码丑陋。
+
+2. 每一个任务都加一个try-catch 实在是太麻烦了，而且代码也不好看，那么这样想的话，可以用UncaughtExceptionHandler 这个类。
+
+![img](../assets/1313391-20191007115714578-486501178.png)
+
+```java
+//1.实现一个自己的线程池工厂
+        ThreadFactory factory = (Runnable r) -> {
+            //创建一个线程
+            Thread t = new Thread(r);
+            //给创建的线程设置UncaughtExceptionHandler对象 里面实现异常的默认逻辑
+            t.setDefaultUncaughtExceptionHandler((Thread thread1, Throwable e) -> {
+                System.out.println("线程工厂设置的exceptionHandler" + e.getMessage());
+            });
+            return t;
+        };
+
+        //2.创建一个自己定义的线程池，使用自己定义的线程工厂
+        ExecutorService service = new ThreadPoolExecutor(1, 1, 0, TimeUnit.MILLISECONDS,new LinkedBlockingQueue(10),factory);
+
+        //3.提交任务
+        service.execute(()->{
+            int i=1/0;
+        });
+```
+
+```
+ExecutorService threadPool = Executors.newFixedThreadPool(1, r -> {
+            Thread t = new Thread(r);
+            t.setUncaughtExceptionHandler(
+                (t1, e) -> LOGGER.error(t1 + " throws exception: " + e));
+            return t;
+        });
+threadPool.submit(()-> exec());
+```
+
+这种方式submit依然不会被设置的setUncaughtExceptionHandler方法捕获的 而execute是可以的
+如果使用submit，要么用get判断 要么自己写try catch
+
+```java
+ExecutorService executorService = Executors.newFixedThreadPool(1);
+        //创建Callable对象
+        //会抛出异常
+        Callable callable=()->{return 1/0;};
+        //提交Callable进线程池，返回future
+        Future future = executorService.submit(callable);
+
+        try {
+            //获取线程池里面的结果
+           Integer a= (Integer) future.get();
+            System.out.println("future中获取结果"+a);
+        } catch (Exception e) {
+            //获取线程池里面的异常
+            System.out.println("future中获取异常"+e.getMessage());
+        }
+```
+
+### Tomcat线程池的不同
+
+[tomcat线程池策略](https://segmentfault.com/a/1190000008052008)
+
+tomcat的线程池与jdk的使用无界LinkedBlockingQueue主要有如下两点区别：
+
+- jdk的ThreadPoolExecutor的线程池增长策略是：如果队列是个有界队列，又如果线程池里的线程不能及时将任务取走，工作队列可能会满掉，插入任务就会失败，此时线程池就会紧急的再创建新的临时线程来补救。而tomcat的ThreadPoolExecutor使用的taskQueue，是无界的LinkedBlockingQueue，但是通过taskQueue的offer方法覆盖了LinkedBlockingQueue的offer方法，改写了规则，使得它也走jdk的ThreadPoolExecutor的有界队列的线程增长策略。
+- jdk的ThreadPoolExecutor的线程池，当core线程数＋临时线程数 > maxSize，则不能再创建新的临时线程了，转头执行RejectExecutionHanlder。而tomcat的ThreadPoolExecutor则改写了这个规则，即catch住了RejectExecutionHanlder，继续往队列里头放，直到队列满了才抛出RejectExecutionHanlder。而默认taskQueue是无界的。
 
 ## 单例写法
 

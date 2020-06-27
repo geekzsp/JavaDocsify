@@ -32,6 +32,10 @@ Heap区OOM故障的主要发源地，存储着几乎所有的实例对象。堆�
 3. JVM Stack(虚拟机栈)
 栈是一个先进后出的数据结构， `StackOverflowError 表示请求的栈溢出，导致内存耗尽，通常出现在递归方法中`。
 
+4. 程序计数器
+
+但是，程序计算器仅仅只是一个运行指示器，它所需要存储的内容仅仅就是下一个需要待执行的命令的地址，无论代码有多少，最坏情况下死循环也不会让这块内存区域超限，因为程序计算器所维护的就是下一条待执行的命令的地址，所以不存在OutOfMemoryError
+
 ## 垃圾回收
 
 绝大多数对象在Eden区生成，当Eden区满的时候触发YGC(Young Garbage)。回收时Enden区没有被引用的对象直接回收，依然存活的放到Surivor。 Surivor有S1和S2两个区 交替使用。YGC的时候把存活的对象(enden+ 当前s的内的对象)放到未使用一个区。然后清除另一个区。一个对象在S1和S2来回交换次数有上限默认15，每次YGC 次数+1，`-XX:MaxTenuringThreshold`可以设置。如果 YGC 要移送的对象大于Survivor 区容量的上限，直接移交给老年代。如果老年代也放不下触发FGC(Full Garbage Collection),FGC后再放不下OOM `-XX:+HeapDumpOnOutOfMemoryError` 发生OOM时输出堆栈信息
