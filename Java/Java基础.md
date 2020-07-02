@@ -268,6 +268,8 @@ System.out.println(bigDecimal4.subtract(bigDecimal5));//0.8
 
 **如果需要精确计算，非要用String来够造BigDecimal不可**！
 
+[用 float 存储金额，老板说损失从工资里扣！](https://mp.weixin.qq.com/s/EenSCVhkb0RnuP3EsbFdow)
+
 ## String StringBuilder StringBuffer
 
 * String StringBuilder  StringBuffer
